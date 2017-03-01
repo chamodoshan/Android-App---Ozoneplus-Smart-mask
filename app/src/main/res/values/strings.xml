@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">OzonePlus</string>
+
+    <string name="appTitle">MENU</string>
+    <string name="gasBtn">Level</string>
+    <string name="areaBtn">Map</string>
+    <string name="profileBtn">Profile</string>
+    <string name="settingsBtn">Settings</string>
+    <string name="title_activity_gas_area">Map</string>
+    <string name="gp_n2">N2</string>
+    <string name="na">N/A</string>
+    <string name="gp_methane">Methane</string>
+    <string name="gp_propane">Propane</string>
+    <string name="gp_co">CO</string>
+    <string name="title_activity_navigation">Navigation</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+</resources>
