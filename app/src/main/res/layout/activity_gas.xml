@@ -53,50 +53,51 @@
     <com.jjoe64.graphview.GraphView
         android:id="@+id/graph"
         android:layout_width="match_parent"
-        android:layout_height="390dp"
+        android:layout_height="360dp"
         android:layout_below="@+id/status" />
 
-    <LinearLayout
-        android:id="@+id/buttonPanel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/graph"
-        android:orientation="horizontal">
-
-        <!--TODO Create two custom shapes for button (enabled & ..)-->
-
-        <Button
-            android:id="@+id/n"
-            android:layout_width="wrap_content"
+    <!--    <LinearLayout
+            android:id="@+id/buttonPanel"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="N" />
+            android:layout_below="@+id/graph"
+            android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/m"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Methane" />
+            &lt;!&ndash;TODO Create two custom shapes for button (enabled & ..)&ndash;&gt;
 
-        <Button
-            android:id="@+id/n2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="N2" />
+            <Button
+                android:id="@+id/n"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N" />
 
-        <Button
-            android:id="@+id/co"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="CO" />
+            <Button
+                android:id="@+id/m"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Methane" />
 
-    </LinearLayout>
+            <Button
+                android:id="@+id/n2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="N2" />
+
+            <Button
+                android:id="@+id/co"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CO" />
+
+        </LinearLayout>-->
 
     <Button
         android:id="@+id/connectBT"
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/buttonPanel"
+        android:layout_below="@+id/graph"
         android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
         android:text="connect" />
 
 </RelativeLayout>

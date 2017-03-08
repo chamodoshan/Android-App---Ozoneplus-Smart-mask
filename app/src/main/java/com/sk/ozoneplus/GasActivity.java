@@ -12,6 +12,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabItem;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.GravityCompat;
@@ -50,11 +51,14 @@ public class GasActivity extends Fragment {
     //TODO set listeners for button if enables enabled button
     //TODO for now when gas button get clicked it only shows particular gas type change that to all in one graph change line colour
     private static final String TAG = "GasActivity";
+
     private static final int TIME_DELAY = 5000;
+
+    private static final int SERVER_TIME = 0;
     private static final int UPDATE_GRAPH = 1;
     private static final int UPDATE_CLOUD = 2;
-    private static final int GET_SERVER_TIME = 11;
-    private static final int SERVER_TIME = 0;
+    private static final int GET_SERVER_TIME = 5;
+    private static final int NO_INTERNET_CONNECTION = 11;
 
     // SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -69,7 +73,7 @@ public class GasActivity extends Fragment {
     private InputStream inputStream;
     private BluetoothServerSocket mmServerSocket;
 
-    private Button btnConnect, btnN, btnM, btnC;
+    private Button btnConnect;
     private GraphView graph;
     private Runnable updateGraph, updateCloud, blue;
     private LineGraphSeries<DataPoint> nSeries, mSeries, cSeries;
@@ -90,9 +94,9 @@ public class GasActivity extends Fragment {
         executor = new Queue();
 
         btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
-        btnN = (Button) getActivity().findViewById(R.id.n);
+        /*btnN = (Button) getActivity().findViewById(R.id.n);
         btnC = (Button) getActivity().findViewById(R.id.co);
-        btnM = (Button) getActivity().findViewById(R.id.m);
+        btnM = (Button) getActivity().findViewById(R.id.m);*/
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -141,7 +145,7 @@ public class GasActivity extends Fragment {
             }
         });
 
-        btnN.setOnClickListener(new View.OnClickListener() {
+/*        btnN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 graph.removeAllSeries();
@@ -163,7 +167,7 @@ public class GasActivity extends Fragment {
                 graph.removeAllSeries();
                 graph.addSeries(cSeries);
             }
-        });
+        });*/
 
         nDataset = new ArrayList<>();
         mDataset = new ArrayList<>();
@@ -255,6 +259,11 @@ public class GasActivity extends Fragment {
                     case UPDATE_CLOUD:
                         executor.execute(updateCloud);
                         System.out.println("[CLOUD HANDLER]");
+                        break;
+
+                    case NO_INTERNET_CONNECTION:
+                        Snackbar.make(getView(), "Internet isn't connected", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                         break;
                 }
             }
@@ -422,7 +431,7 @@ public class GasActivity extends Fragment {
             }
         };
 
-        commandHandler.sendEmptyMessage(11);
+        commandHandler.sendEmptyMessage(GET_SERVER_TIME);
     }
 
     /**
@@ -492,39 +501,30 @@ public class GasActivity extends Fragment {
                 Class.forName("net.sourceforge.jtds.jdbc.Driver");
                 con = DriverManager.getConnection(connectionString, userAdmin, password);
 
-                try {
-                    String SQL = null;
+                String SQL = null;
 
-                    switch (params[0]) {
-                        case "GET_TIME":
-                            // Create and execute an SQL statement that returns some data.
-                            SQL = "SELECT GETDATE() AS CurrentDateTime";
-                            break;
-                    }
-
-                    System.out.println("[SQL PREPARED]");
-
-                    stmt = con.createStatement();
-                    rs = stmt.executeQuery(SQL);
-
-                    while (rs.next()) {
-                        System.out.println(rs.getString(1));
-                        responseHandler.obtainMessage(SERVER_TIME, rs.getString(1)).sendToTarget();
-                    }
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    //TODO add exception to responseHandler
+                switch (params[0]) {
+                    case "GET_TIME":
+                        // Create and execute an SQL statement that returns some data.
+                        SQL = "SELECT GETDATE() AS CurrentDateTime";
+                        break;
                 }
 
-                // Iterate through the data in the result set and display it.
-                /*while (rs.next()) {
-                    System.out.println(rs.getString(1) + " " + rs.getString(2));
-                    message = rs.getString(1) + " " + rs.getString(2);
-                }*/
-            }
+                System.out.println("[SQL PREPARED]");
 
-            // Handle any errors that may have occurred.
-            catch (Exception e) {
+                stmt = con.createStatement();
+                rs = stmt.executeQuery(SQL);
+
+                while (rs.next()) {
+                    System.out.println(rs.getString(1));
+                    responseHandler.obtainMessage(SERVER_TIME, rs.getString(1)).sendToTarget();
+                }
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+                //TODO add exception to responseHandler
+                responseHandler.sendEmptyMessage(NO_INTERNET_CONNECTION);
+            } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 if (rs != null) try {
