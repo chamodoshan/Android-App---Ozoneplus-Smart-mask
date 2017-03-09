@@ -4,9 +4,9 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:statusBarColor">@color/blue_1</item>
-        <item name="colorPrimary">@color/primary_dark_material_light</item>
-        <item name="colorPrimaryDark">@color/place_autocomplete_search_text</item>
+        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
     </style>
 
     <style name="Theme.Blue.Ozone" parent="Theme.AppCompat.Light.NoActionBar">

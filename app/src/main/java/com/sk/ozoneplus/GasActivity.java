@@ -64,6 +64,7 @@ public class GasActivity extends Fragment {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // server's MAC address
     private static String address = "84:EF:18:B7:8D:AF";
+    //private static String address = "00:21:13:00:66:A8";
 
     private static Handler responseHandler, commandHandler;
 
