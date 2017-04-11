@@ -5,6 +5,7 @@
     android:id="@+id/activity_gas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/colorPrimary"
     android:paddingBottom="@dimen/noPadding"
     android:paddingLeft="@dimen/noPadding"
     android:paddingRight="@dimen/noPadding"
@@ -28,10 +29,12 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/logo"
         android:layout_marginBottom="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:drawableLeft="@drawable/ic_username_24dp"
         android:drawablePadding="10dp"
         android:hint="@string/loginUsername"
-        android:textSize="20sp"
+        android:textSize="18sp"
         tools:ignore="RtlHardcoded" />
 
     <EditText
@@ -40,12 +43,14 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/username"
         android:layout_marginBottom="40dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:drawableLeft="@drawable/ic_password_24dp"
         android:drawablePadding="10dp"
         android:fontFamily="sans-serif"
         android:hint="@string/loginPassword"
         android:inputType="textPassword"
-        android:textSize="20sp"
+        android:textSize="18sp"
         tools:ignore="RtlHardcoded" />
 
     <Button
@@ -53,9 +58,10 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@+id/password"
-        android:background="@color/colorPrimary"
+        android:background="@color/colorPrimaryDark"
         android:onClick="login"
-        android:text="login" />
+        android:text="login"
+        android:textSize="20sp" />
 
     <TextView
         android:layout_width="match_parent"

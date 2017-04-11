@@ -1,5 +1,6 @@
 package com.sk.ozoneplus;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -43,12 +44,19 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    //TODO complete showerror
     public void showError() {
 
     }
 
     public void show(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    public void next(String username) {
+        Intent intent = new Intent(this, MenuActivity.class);
+        intent.putExtra("username", username);
+        startActivity(intent);
     }
 
 
@@ -119,13 +127,15 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
 
+            loginTask = null;
+
             if (result) {
                 show("SUCCESS");
+                next(username);
             } else {
+                //TODO invoke showerror method
                 show("FAILED");
             }
-
-            loginTask = null;
         }
     }
 }
