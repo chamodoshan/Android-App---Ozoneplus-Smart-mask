@@ -3,6 +3,7 @@ package com.sk.ozoneplus;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -28,15 +29,16 @@ public class LoginActivity extends AppCompatActivity {
         txt_password = (EditText) findViewById(R.id.password);
     }
 
-    public void login() {
+    public void login(View view) {
         String username = txt_username.getText().toString();
         String password = txt_password.getText().toString();
 
         if (username.length() < 1 || password.length() < 1) {
 
         } else {
-            if (loginTask != null) {
+            if (loginTask == null) {
                 loginTask = new UserLoginTask(username, password);
+                loginTask.execute();
             }
         }
     }
@@ -45,7 +47,12 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    class UserLoginTask extends AsyncTask<String, Void, Boolean> {
+    public void show(String message) {
+        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+
+    private class UserLoginTask extends AsyncTask<String, Void, Boolean> {
 
         private final String username, user_password;
 
@@ -62,10 +69,6 @@ public class LoginActivity extends AppCompatActivity {
         public UserLoginTask(String username, String password) {
             this.username = username;
             this.user_password = password;
-        }
-
-        public void show(String message) {
-            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
         }
 
         @Override
@@ -115,13 +118,14 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Boolean result) {
             super.onPostExecute(result);
-            loginTask = null;
 
             if (result) {
                 show("SUCCESS");
             } else {
                 show("FAILED");
             }
+
+            loginTask = null;
         }
     }
 }
