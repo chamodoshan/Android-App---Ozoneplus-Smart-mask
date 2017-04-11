@@ -19,7 +19,8 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/ozone_bg_part" />
+        android:background="@drawable/ozone_bg_part"
+        android:contentDescription="" />
 
     <EditText
         android:id="@+id/username"
@@ -44,22 +45,24 @@
         android:fontFamily="sans-serif"
         android:hint="@string/loginPassword"
         android:inputType="textPassword"
-        android:textSize="20dp" />
+        android:textSize="20sp"
+        tools:ignore="RtlHardcoded" />
 
     <Button
-        android:background="@color/colorPrimary"
         android:id="@+id/login"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@+id/password"
+        android:background="@color/colorPrimary"
+        android:onClick="login"
         android:text="login" />
 
     <TextView
-        android:textAlignment="center"
-        android:text="Don't have an account Signup here"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/login"
         android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:text="Don't have an account Signup here"
+        android:textAlignment="center" />
 
 </RelativeLayout>
