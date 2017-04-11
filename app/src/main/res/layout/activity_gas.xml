@@ -55,41 +55,6 @@
         android:layout_height="360dp"
         android:layout_below="@+id/status" />
 
-    <!--    <LinearLayout
-            android:id="@+id/buttonPanel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/graph"
-            android:orientation="horizontal">
-
-            &lt;!&ndash;TODO Create two custom shapes for button (enabled & ..)&ndash;&gt;
-
-            <Button
-                android:id="@+id/n"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="N" />
-
-            <Button
-                android:id="@+id/m"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Methane" />
-
-            <Button
-                android:id="@+id/n2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="N2" />
-
-            <Button
-                android:id="@+id/co"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="CO" />
-
-        </LinearLayout>-->
-
     <Button
         android:id="@+id/connectBT"
         android:layout_width="wrap_content"
@@ -98,5 +63,30 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="connect" />
+
+    <!--<android.support.design.widget.TabLayout
+        android:id="@+id/Date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:layout_below="@+id/graph"
+        app:tabIndicatorColor="@color/colorPrimaryDark">
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Day" />
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Month" />
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Year" />
+
+    </android.support.design.widget.TabLayout>-->
 
 </RelativeLayout>

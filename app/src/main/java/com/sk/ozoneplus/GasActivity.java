@@ -50,6 +50,7 @@ import java.util.concurrent.Executor;
 public class GasActivity extends Fragment {
     //TODO set listeners for button if enables enabled button
     //TODO for now when gas button get clicked it only shows particular gas type change that to all in one graph change line colour
+    //TODO if toxic area found and confirmed send request to gmaps API and get location and add to DB
     private static final String TAG = "GasActivity";
 
     private static final int TIME_DELAY = 5000;
@@ -63,7 +64,7 @@ public class GasActivity extends Fragment {
     // SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // server's MAC address
-    private static String address = "84:EF:18:B7:8D:AF";
+    private static final String address = "84:EF:18:B7:8D:AF";
     //private static String address = "00:21:13:00:66:A8";
 
     private static Handler responseHandler, commandHandler;
@@ -95,9 +96,6 @@ public class GasActivity extends Fragment {
         executor = new Queue();
 
         btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
-        /*btnN = (Button) getActivity().findViewById(R.id.n);
-        btnC = (Button) getActivity().findViewById(R.id.co);
-        btnM = (Button) getActivity().findViewById(R.id.m);*/
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -145,30 +143,6 @@ public class GasActivity extends Fragment {
                 }
             }
         });
-
-/*        btnN.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                graph.removeAllSeries();
-                graph.addSeries(nSeries);
-            }
-        });
-
-        btnM.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                graph.removeAllSeries();
-                graph.addSeries(mSeries);
-            }
-        });
-
-        btnC.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                graph.removeAllSeries();
-                graph.addSeries(cSeries);
-            }
-        });*/
 
         nDataset = new ArrayList<>();
         mDataset = new ArrayList<>();
@@ -279,7 +253,8 @@ public class GasActivity extends Fragment {
                     con = DriverManager.getConnection(connectionString, userAdmin, password);
 
                     // Create and execute an SQL statement that returns some data.
-                    String SQL = "INSERT INTO daily VALUES('OO','N',56,45)";
+                    String SQL = "INSERT INTO daily (userName, gasType, hour, level) " +
+                            "VALUES ('sk','C',12,7)";
                     stmt = con.createStatement();
                     rs = stmt.executeQuery(SQL);
                 } catch (Exception e) {

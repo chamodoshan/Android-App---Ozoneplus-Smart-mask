@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="AppMaskDB@appmaskdb.database.windows.net" uuid="cff390a2-af3b-421d-be50-a7f7f4996ad9">
+      <driver-ref>sqlserver.ms</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://appmaskdb.database.windows.net:1433;databaseName=AppMaskDB</jdbc-url>
+    </data-source>
+  </component>
+</project>
