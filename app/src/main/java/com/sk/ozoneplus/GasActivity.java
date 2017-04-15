@@ -5,28 +5,19 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabItem;
 import android.support.design.widget.TabLayout;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TableLayout;
 import android.widget.Toast;
 
 import com.jjoe64.graphview.GraphView;
@@ -77,11 +68,13 @@ public class GasActivity extends Fragment {
 
     private Button btnConnect;
     private GraphView graph;
-    private Runnable updateGraph, updateCloud, blue;
+    private Runnable updateGraph, updateCloud, connectBT;
     private LineGraphSeries<DataPoint> nSeries, mSeries, cSeries;
     private ArrayList<Double> nDataset, mDataset, cDataset;
     private Executor executor;
     private int xAnsis = 0;
+
+    private static String username;
 
     @Nullable
     @Override
@@ -93,9 +86,9 @@ public class GasActivity extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        executor = new Queue();
+        username = new Bundle().getString("username");
 
-        btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
+        executor = new Queue();
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -129,6 +122,8 @@ public class GasActivity extends Fragment {
             }
         });
 
+        btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
+
         //TODO change this onClick to XML file
         btnConnect.setOnClickListener(new View.OnClickListener() {
             boolean clicked = false;
@@ -136,7 +131,7 @@ public class GasActivity extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!clicked) {
-                    executor.execute(blue);
+                    executor.execute(connectBT);
                     executor.execute(updateGraph);
                     //executor.execute(updateCloud);
                     clicked = true;
@@ -168,15 +163,6 @@ public class GasActivity extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
     }
-
-    private final static String connectionString =
-            "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
-    private final static String userAdmin = "maskAdmin@appmaskdb";
-    private final static String password = "Sdgp12345678";
-    // Declare the JDBC objects.
-    private Connection con = null;
-    private Statement stmt = null;
-    private ResultSet rs = null;
 
     @Override
     public void onStart() {
@@ -221,7 +207,7 @@ public class GasActivity extends Fragment {
                     case UPDATE_GRAPH:
                         byte[] readBuf = (byte[]) msg.obj;
                         strIncome = new String(readBuf, 0, msg.arg1);
-                        Toast.makeText(getActivity().getApplicationContext(), strIncome, Toast.LENGTH_SHORT).show();
+                        showToast(strIncome);
                         String[] a = strIncome.split("/");
 
                         nDataset.add(Double.parseDouble(a[0]));
@@ -244,40 +230,59 @@ public class GasActivity extends Fragment {
             }
         };
 
-        updateCloud = new Runnable() {
+        updateCloud();
+        connectBT();
+        updateGraph();
+
+        //commandHandler.sendEmptyMessage(GET_SERVER_TIME);
+    }
+
+    public void showToast(String message) {
+        try {
+            Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_LONG).show();
+        } catch (NullPointerException e) {
+            //e.printStackTrace();
+        }
+    }
+
+    /**
+     * Initialize updateGraph Runnable
+     */
+    private void updateGraph() {
+        updateGraph = new Runnable() {
             @Override
             public void run() {
-                try {
-                    // Establish the connection.
-                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                    con = DriverManager.getConnection(connectionString, userAdmin, password);
-
-                    // Create and execute an SQL statement that returns some data.
-                    String SQL = "INSERT INTO daily (userName, gasType, hour, level) " +
-                            "VALUES ('sk','C',12,7)";
-                    stmt = con.createStatement();
-                    rs = stmt.executeQuery(SQL);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Exception", e);
-                } finally {
-                    if (rs != null) try {
-                        rs.close();
-                    } catch (Exception e) {
+                while (true) {
+                    try {
+                        //TODO if data not found leave a space in graph
+                        nSeries.appendData(new DataPoint(graph2LastXValue, getValue(nDataset)), true, 40);
+                        mSeries.appendData(new DataPoint(graph2LastXValue, getValue(mDataset)), true, 40);
+                        cSeries.appendData(new DataPoint(graph2LastXValue, getValue(cDataset)), true, 40);
+                        y++;
+                        //TODO move this to finally part
+                        graph2LastXValue += 5;
+                        Thread.sleep(TIME_DELAY);
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("[ARRAY OUT OF BOUND]");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e1) {
+                            e1.printStackTrace();
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    if (stmt != null) try {
-                        stmt.close();
-                    } catch (Exception e) {
-                    }
-                    if (con != null) try {
-                        con.close();
-                    } catch (Exception e) {
-                    }
+                    //TODO add if condition (not necessary)
                 }
             }
         };
+    }
 
-        blue = new Runnable() {
+    /**
+     * Initialize bluetooth Runnable
+     */
+    private void connectBT() {
+        connectBT = new Runnable() {
             @Override
             public void run() {
                 btAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -377,37 +382,50 @@ public class GasActivity extends Fragment {
                 }
             }
         };
+    }
 
+    private final static String connectionString =
+            "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
+    private final static String userAdmin = "maskAdmin@appmaskdb";
+    private final static String password = "Sdgp12345678";
+    // Declare the JDBC objects.
+    private Connection con = null;
+    private Statement stmt = null;
+    private ResultSet rs = null;
 
-        updateGraph = new Runnable() {
+    private void updateCloud() {
+        updateCloud = new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        //TODO if data not found leave a space in graph
-                        nSeries.appendData(new DataPoint(graph2LastXValue, getValue(nDataset)), true, 40);
-                        mSeries.appendData(new DataPoint(graph2LastXValue, getValue(mDataset)), true, 40);
-                        cSeries.appendData(new DataPoint(graph2LastXValue, getValue(cDataset)), true, 40);
-                        y++;
-                        //TODO move this to finally part
-                        graph2LastXValue += 5;
-                        Thread.sleep(TIME_DELAY);
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("[ARRAY OUT OF BOUND]");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                try {
+                    // Establish the connection.
+                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
+                    con = DriverManager.getConnection(connectionString, userAdmin, password);
+
+                    // Create and execute an SQL statement that returns some data.
+                    String SQL = "INSERT INTO daily (userName, gasType, hour, level) " +
+                            "VALUES ('sk','C',12,7)";
+                    stmt = con.createStatement();
+                    rs = stmt.executeQuery(SQL);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Exception", e);
+                } finally {
+                    if (rs != null) try {
+                        rs.close();
+                    } catch (Exception e) {
                     }
-                    //TODO add if condition (not necessary)
+                    if (stmt != null) try {
+                        stmt.close();
+                    } catch (Exception e) {
+                    }
+                    if (con != null) try {
+                        con.close();
+                    } catch (Exception e) {
+                    }
                 }
             }
         };
-
-        commandHandler.sendEmptyMessage(GET_SERVER_TIME);
     }
 
     /**
@@ -440,6 +458,16 @@ public class GasActivity extends Fragment {
         super.onResume();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
+
     private double getValue(ArrayList<Double> list) throws ArrayIndexOutOfBoundsException {
         try {
             return list.get(y);
@@ -453,7 +481,7 @@ public class GasActivity extends Fragment {
      * Such as server time, cloud connection
      * Possible params for doInBackground are GET_TIME , CLOUD_CONNECTION
      */
-    public class ConnectCloud extends AsyncTask<String, String, String> {
+    private class ConnectCloud extends AsyncTask<String, String, String> {
         private final static String TAG = "ConnectCloud";
         private final static String connectionString =
                 "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
@@ -535,10 +563,10 @@ public class GasActivity extends Fragment {
         }
     }
 
-    public class Queue implements Executor {
+    private class Queue implements Executor {
 
         @Override
-        public void execute(Runnable command) {
+        public void execute(@NonNull Runnable command) {
             new Thread(command).start();
             System.out.println("[QUEUE] HAS STARTED");
         }
