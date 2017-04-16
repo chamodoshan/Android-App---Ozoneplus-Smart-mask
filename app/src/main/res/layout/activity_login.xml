@@ -5,7 +5,7 @@
     android:id="@+id/activity_gas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@color/colorPrimaryLight"
     android:paddingBottom="@dimen/noPadding"
     android:paddingLeft="@dimen/noPadding"
     android:paddingRight="@dimen/noPadding"
@@ -20,7 +20,8 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/ozone_bg_part" />
+        android:background="@drawable/ozone_bg_part"
+        android:contentDescription="" />
 
     <EditText
         android:id="@+id/username"
@@ -33,6 +34,9 @@
         android:drawableLeft="@drawable/ic_username_24dp"
         android:drawablePadding="10dp"
         android:hint="@string/loginUsername"
+        android:maxLines="1"
+        android:textColor="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
         android:textSize="20sp"
         tools:ignore="RtlHardcoded" />
 
@@ -49,7 +53,11 @@
         android:fontFamily="sans-serif"
         android:hint="@string/loginPassword"
         android:inputType="textPassword"
-        android:textSize="20dp" />
+        android:maxLines="1"
+        android:textColor="@color/colorPrimary"
+        android:textColorHint="@color/colorPrimary"
+        android:textSize="20sp"
+        tools:ignore="RtlHardcoded" />
 
     <Button
         android:id="@+id/login"
