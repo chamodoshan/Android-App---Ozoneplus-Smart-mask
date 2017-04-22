@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -39,6 +40,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+
+import io.fabric.sdk.android.Fabric;
 
 public class GasActivity extends Fragment {
     //TODO set listeners for button if enables enabled button
@@ -190,7 +193,7 @@ public class GasActivity extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+        Fabric.with(getActivity().getApplicationContext(), new Crashlytics());
         //maskDB = new MaskDB_Manger()
     }
 

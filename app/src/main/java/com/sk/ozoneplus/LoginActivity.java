@@ -9,6 +9,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -54,6 +56,8 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void next(String username) {
+        Crashlytics.setUserName(username);
+
         Intent intent = new Intent(this, MenuActivity.class);
         intent.putExtra("username", username);
         startActivity(intent);
