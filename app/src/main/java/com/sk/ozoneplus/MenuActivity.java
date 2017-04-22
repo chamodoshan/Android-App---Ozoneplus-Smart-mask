@@ -1,11 +1,9 @@
 package com.sk.ozoneplus;
 
 import android.app.FragmentManager;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -14,9 +12,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.sk.ozoneplus.db.MaskDB_Manger;
 
 public class MenuActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    private static String username;
+
+    private TextView txt_username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +31,24 @@ public class MenuActivity extends AppCompatActivity
         setContentView(R.layout.activity_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        //username = getIntent().getStringExtra("username");
+
+        //Toast.makeText(getApplicationContext(),username,Toast.LENGTH_LONG).show();
+
+        //txt_username = (TextView) findViewById(R.id.username);
+
+        /*TextView message = (TextView) findViewById(R.id.message);
+
+        MaskDB_Manger maskDB = new MaskDB_Manger(this, username);
+        Cursor cursor = maskDB.getDaily();
+        cursor.moveToFirst();
+        String msg = null;
+        while (!cursor.isAfterLast()) {
+            msg += cursor.getString(cursor.getColumnIndex("hour")) + " ";
+            msg += cursor.getString(cursor.getColumnIndex("level")) + "\n";
+        }
+        message.setText(msg);*/
 
         /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -42,6 +67,12 @@ public class MenuActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //txt_username.setText(username);
     }
 
     @Override

@@ -130,11 +130,11 @@ public class LoginActivity extends AppCompatActivity {
             loginTask = null;
 
             if (result) {
-                show("SUCCESS");
+                //show("SUCCESS");
                 next(username);
             } else {
                 //TODO invoke showerror method
-                show("FAILED");
+                //show("FAILED");
             }
         }
     }

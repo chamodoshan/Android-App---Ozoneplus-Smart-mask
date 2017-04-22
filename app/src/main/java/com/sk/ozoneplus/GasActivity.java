@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
+import com.sk.ozoneplus.db.MaskDB_Manger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,6 +61,7 @@ public class GasActivity extends Fragment {
     //private static String address = "00:21:13:00:66:A8";
 
     private static Handler responseHandler, commandHandler;
+    private MaskDB_Manger maskDB;
 
     private BluetoothAdapter btAdapter;
     private BluetoothSocket btSocket;
@@ -89,6 +92,7 @@ public class GasActivity extends Fragment {
         username = new Bundle().getString("username");
 
         executor = new Queue();
+        maskDB = new MaskDB_Manger(getActivity().getApplicationContext(), username);
 
         TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -96,16 +100,16 @@ public class GasActivity extends Fragment {
             public void onTabSelected(TabLayout.Tab tab) {
                 graph.removeAllSeries();
                 switch (tab.getPosition()) {
-                    case 1:
-                        graph.addSeries(nSeries);
+                    case 0:
+                        getDateFromCloud("SELECT * FROM monthly WHERE userName = 'sk'");
                         break;
-                    case 2:
+                    case 1:
                         graph.addSeries(mSeries);
                         break;
-                    case 3:
+                    case 2:
                         graph.addSeries(cSeries);
                         break;
-                    case 4:
+                    case 3:
 
                         break;
                 }
@@ -139,29 +143,55 @@ public class GasActivity extends Fragment {
             }
         });
 
+        initializeGraph();
+    }
+
+    public void initializeGraph() {
         nDataset = new ArrayList<>();
         mDataset = new ArrayList<>();
         cDataset = new ArrayList<>();
 
         nSeries = new LineGraphSeries<>();
+        nSeries.setAnimated(true);
+        nSeries.setThickness(5);
+        nSeries.setColor(Color.GREEN);
+
         mSeries = new LineGraphSeries<>();
+        mSeries.setAnimated(true);
+        mSeries.setThickness(5);
+        mSeries.setColor(Color.RED);
+
         cSeries = new LineGraphSeries<>();
+        cSeries.setAnimated(true);
+        cSeries.setThickness(5);
+        cSeries.setColor(Color.YELLOW);
 
         //TODO create SQL Lite database . If already exists update it else create new
 
         graph = (GraphView) getActivity().findViewById(R.id.graph);
+
         graph.addSeries(nSeries);
+        graph.addSeries(mSeries);
+        graph.addSeries(cSeries);
+
         graph.getViewport().setXAxisBoundsManual(false);
         graph.getViewport().setScrollable(true); // enables horizontal scrolling
         graph.getViewport().setScrollableY(true); // enables vertical scrolling
         graph.getViewport().setScalable(true); // enables horizontal zooming and scrolling
         graph.getViewport().setScalableY(true); // enables vertical zooming and scrolling
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("Time");
+
+        /*StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
+        staticLabelsFormatter.setHorizontalLabels(label);
+        graph.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);*/
         /*graph.setBackgroundColor(Color.RED);*/
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        //maskDB = new MaskDB_Manger()
     }
 
     @Override
@@ -254,13 +284,22 @@ public class GasActivity extends Fragment {
             public void run() {
                 while (true) {
                     try {
+
+                        double n = getValue(nDataset);
+                        double m = getValue(mDataset);
+                        double c = getValue(cDataset);
+
                         //TODO if data not found leave a space in graph
-                        nSeries.appendData(new DataPoint(graph2LastXValue, getValue(nDataset)), true, 40);
-                        mSeries.appendData(new DataPoint(graph2LastXValue, getValue(mDataset)), true, 40);
-                        cSeries.appendData(new DataPoint(graph2LastXValue, getValue(cDataset)), true, 40);
+                        nSeries.appendData(new DataPoint(graphHoriLabel, n), true, 40);
+                        mSeries.appendData(new DataPoint(graphHoriLabel, m), true, 40);
+                        cSeries.appendData(new DataPoint(graphHoriLabel, c), true, 40);
                         y++;
                         //TODO move this to finally part
-                        graph2LastXValue += 5;
+
+                        insertDaily(graphHoriLabel, n, 1);
+                        insertDaily(graphHoriLabel, m, 2);
+                        insertDaily(graphHoriLabel, c, 3);
+                        graphHoriLabel++;
                         Thread.sleep(TIME_DELAY);
                     } catch (ArrayIndexOutOfBoundsException e) {
                         System.out.println("[ARRAY OUT OF BOUND]");
@@ -276,6 +315,10 @@ public class GasActivity extends Fragment {
                 }
             }
         };
+    }
+
+    public void insertDaily(double hour, double level, int gas) {
+        maskDB.insertDaily((int) hour, (int) level, gas);
     }
 
     /**
@@ -428,6 +471,53 @@ public class GasActivity extends Fragment {
         };
     }
 
+    private void getDateFromCloud(final String query) {
+        Runnable getData = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    // Establish the connection.
+                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
+                    con = DriverManager.getConnection(connectionString, userAdmin, password);
+
+                    // Create and execute an SQL statement that returns some data.
+                    String SQL = query;
+                    stmt = con.createStatement();
+                    rs = stmt.executeQuery(SQL);
+
+                    LineGraphSeries<DataPoint> quaries = new LineGraphSeries<>();
+
+                    while (rs.next()) {
+                        String day = rs.getString("day");
+                        String level = rs.getString("level");
+                        //showToast(day);
+                        //showToast(level);
+                        quaries.appendData(new DataPoint(Double.parseDouble(day), Double.parseDouble(level)), true, 40);
+                    }
+
+                    graph.addSeries(quaries);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Log.e(TAG, "Exception", e);
+                } finally {
+                    if (rs != null) try {
+                        rs.close();
+                    } catch (Exception e) {
+                    }
+                    if (stmt != null) try {
+                        stmt.close();
+                    } catch (Exception e) {
+                    }
+                    if (con != null) try {
+                        con.close();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        };
+        executor.execute(getData);
+    }
+
     /**
      * @param serverDate server's time in String format
      * @param sysDate    system's time in String format
@@ -451,7 +541,7 @@ public class GasActivity extends Fragment {
     }
 
     int y = 0;
-    private double graph2LastXValue = 0d;
+    private double graphHoriLabel = 0d;
 
     @Override
     public void onResume() {
@@ -563,6 +653,9 @@ public class GasActivity extends Fragment {
         }
     }
 
+    /**
+     * A subclass used to create new thread from runnable
+     */
     private class Queue implements Executor {
 
         @Override

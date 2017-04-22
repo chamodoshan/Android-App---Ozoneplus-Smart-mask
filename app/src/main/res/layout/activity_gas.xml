@@ -70,6 +70,7 @@
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
         android:layout_below="@+id/graph"
+        android:layout_marginTop="5dp"
         app:tabIndicatorColor="@color/colorPrimaryDark">
 
         <android.support.design.widget.TabItem

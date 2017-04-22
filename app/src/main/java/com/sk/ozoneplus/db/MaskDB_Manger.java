@@ -67,6 +67,12 @@ public class MaskDB_Manger extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         //TODO search about it
+        //db.execSQL("DROP TABLE IF EXISTS " + TABLE_GAS_DAILY);
+    }
+
+    public void dropDatabase() {
+        SQLiteDatabase database = this.getWritableDatabase();
+        database.execSQL("DROP TABLE IF EXISTS " + TABLE_GAS_DAILY);
     }
 
     public void insertDaily(int hour, int level, int gasId) {

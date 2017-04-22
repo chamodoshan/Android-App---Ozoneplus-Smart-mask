@@ -21,7 +21,8 @@
         android:layout_marginRight="30dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/ozone_bg_part"
-        android:contentDescription="" />
+        android:contentDescription=""
+        tools:ignore="ContentDescription" />
 
     <EditText
         android:id="@+id/username"

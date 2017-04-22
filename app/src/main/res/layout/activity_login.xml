@@ -31,6 +31,7 @@
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:backgroundTint="@color/colorPrimary"
         android:drawableLeft="@drawable/ic_username_24dp"
         android:drawablePadding="10dp"
         android:hint="@string/loginUsername"
@@ -48,6 +49,7 @@
         android:layout_marginBottom="40dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+        android:backgroundTint="@color/colorPrimary"
         android:drawableLeft="@drawable/ic_password_24dp"
         android:drawablePadding="10dp"
         android:fontFamily="sans-serif"
@@ -73,6 +75,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/login"
         android:layout_marginTop="20dp"
+        android:textColor="@color/colorPrimaryDark"
         android:text="Don't have an account Signup here"
         android:textAlignment="center" />
 

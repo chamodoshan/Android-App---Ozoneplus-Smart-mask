@@ -1,12 +1,13 @@
+//noinspection GradleCompatible
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.sk.ozoneplus"
         minSdkVersion 14
-        targetSdkVersion 23
+        targetSdkVersion 25
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -30,9 +31,11 @@ buildscript {
 
         // We recommend changing it to the latest version from our changelog:
         // https://docs.fabric.io/android/changelog.html#fabric-gradle-plugin
-        classpath 'io.fabric.tools:gradle:1.+'
+        classpath 'io.fabric.tools:gradle:1.22.1'
     }
 }
+
+apply plugin: 'com.android.application'
 
 apply plugin: 'io.fabric'
 
@@ -48,10 +51,10 @@ dependencies {
     compile files('libs/jtds-1.2.8.jar')
     compile files('libs/sqljdbc4.jar')
     compile files('libs/GraphView-4.2.1.jar')
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.android.support:support-annotations:24.2.0'
+    compile 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:support-annotations:25.1.0'
     compile 'com.google.android.gms:play-services:10.0.1'
-    compile 'com.android.support:design:23.4.0'
+    compile 'com.android.support:design:25.4.0'
     compile 'com.android.support.constraint:constraint-layout:1.0.0-beta4'
     testCompile 'junit:junit:4.12'
     compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') {
