@@ -76,7 +76,7 @@
         android:layout_below="@+id/login"
         android:layout_marginTop="20dp"
         android:textColor="@color/colorPrimaryDark"
-        android:text="No account yet? Create one"
+        android:text="Don't have an account Signup here"
         android:textAlignment="center" />
 
 </RelativeLayout>
