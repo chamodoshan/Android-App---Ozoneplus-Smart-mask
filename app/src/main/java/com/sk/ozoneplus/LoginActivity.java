@@ -1,11 +1,14 @@
 package com.sk.ozoneplus;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,10 +23,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class LoginActivity extends AppCompatActivity {
-
+    //TODO change dismiss progress dialog to separate method
     private EditText txt_username, txt_password;
-    private Button login;
     private UserLoginTask loginTask;
+    private static final String TAG = "LoginActivity";
+    private final ProgressDialog progressDialog = new ProgressDialog(getApplicationContext());
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,20 +43,29 @@ public class LoginActivity extends AppCompatActivity {
         String password = txt_password.getText().toString();
 
         if (username.length() < 1 || password.length() < 1) {
-
+            showError("Username or Password is empty");
         } else {
             if (loginTask == null) {
+                Log.d(TAG, "Login");
+                showProgress();
                 loginTask = new UserLoginTask(username, password);
                 loginTask.execute();
             }
         }
     }
 
-    public void showError() {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setMessage("Invalid username or password \nTry again");
+    private void showProgress() {
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Authenticating...");
+        progressDialog.show();
+    }
 
-        alertDialogBuilder.setNegativeButton("Ok",new DialogInterface.OnClickListener() {
+    public void showError(String message) {
+        progressDialog.dismiss();
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage(message);
+
+        alertDialogBuilder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 finish();
@@ -69,6 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public void next(String username) {
         Crashlytics.setUserName(username);
+        progressDialog.dismiss();
 
         Intent intent = new Intent(this, MenuActivity.class);
         intent.putExtra("username", username);
@@ -96,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Boolean doInBackground(String... params) {
+        protected Boolean doInBackground(@NonNull String... params) {
 
             try {
                 // Establish the connection.
@@ -112,27 +126,24 @@ public class LoginActivity extends AppCompatActivity {
                     if (rs.getString("password").equals(user_password)) {
                         return true;
                     }
-                    //responseHandler.obtainMessage(SERVER_TIME, rs.getString(1)).sendToTarget();
                 }
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                //TODO add exception to responseHandler
-                //responseHandler.sendEmptyMessage(NO_INTERNET_CONNECTION);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 if (rs != null) try {
                     rs.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 if (stmt != null) try {
                     stmt.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
                 if (con != null) try {
                     con.close();
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
 
@@ -148,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
             if (result) {
                 next(username);
             } else {
-                showError();
+                showError("Invalid username or password \nTry again");
             }
         }
     }
