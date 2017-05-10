@@ -15,7 +15,8 @@
         android:layout_marginRight="30dp"
         android:layout_marginTop="70dp"
         android:layout_marginBottom="70dp"
-        android:background="@drawable/ozone_bg_part" />
+        android:background="@drawable/ozone_bg_part"
+        android:contentDescription="ozoneLogo" />
 
     <Button
         android:id="@+id/signup"
@@ -25,7 +26,6 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/image"
         android:background="@color/colorPrimary"
-        android:onClick="signup"
         android:text="Signup" />
 
     <Button
@@ -35,7 +35,6 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/signup"
-        android:onClick="login"
         android:background="@color/colorPrimaryDark"
         android:text="Login" />
 
