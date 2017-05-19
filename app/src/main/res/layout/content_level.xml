@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.sk.ozoneplus.db.LevelActivity"
+    tools:showIn="@layout/activity_level">
+
+    <android.support.design.widget.TabLayout
+        android:id="@+id/levels_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        app:tabIndicatorColor="@color/colorPrimaryLight">
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="DAY" />
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MONTH" />
+
+        <android.support.design.widget.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="YEAR" />
+
+    </android.support.design.widget.TabLayout>
+
+    <com.jjoe64.graphview.GraphView
+        android:id="@+id/level_graph"
+        android:layout_width="match_parent"
+        android:layout_height="465dp"
+        android:layout_below="@+id/levels_tabs" />
+
+</RelativeLayout>
