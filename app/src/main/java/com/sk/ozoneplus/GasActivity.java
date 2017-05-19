@@ -72,7 +72,6 @@ public class GasActivity extends Fragment {
     private InputStream inputStream;
     private BluetoothServerSocket mmServerSocket;
 
-    private Button btnConnect;
     private GraphView graph;
     private Runnable updateGraph, updateCloud, connectBT;
     private LineGraphSeries<DataPoint> nSeries, mSeries, cSeries;
@@ -104,7 +103,7 @@ public class GasActivity extends Fragment {
                 graph.removeAllSeries();
                 switch (tab.getPosition()) {
                     case 0:
-                        getDateFromCloud("SELECT * FROM monthly WHERE userName = 'sk'");
+                        getDateFromCloud("SELECT * FROM monthly WHERE userName = '" + username + "'");
                         break;
                     case 1:
                         graph.addSeries(mSeries);
@@ -129,7 +128,7 @@ public class GasActivity extends Fragment {
             }
         });
 
-        btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
+        Button btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
 
         //TODO change this onClick to XML file
         btnConnect.setOnClickListener(new View.OnClickListener() {
@@ -484,9 +483,8 @@ public class GasActivity extends Fragment {
                     con = DriverManager.getConnection(connectionString, userAdmin, password);
 
                     // Create and execute an SQL statement that returns some data.
-                    String SQL = query;
                     stmt = con.createStatement();
-                    rs = stmt.executeQuery(SQL);
+                    rs = stmt.executeQuery(query);
 
                     LineGraphSeries<DataPoint> quaries = new LineGraphSeries<>();
 

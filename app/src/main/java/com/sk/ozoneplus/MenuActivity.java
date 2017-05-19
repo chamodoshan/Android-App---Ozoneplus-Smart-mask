@@ -115,7 +115,22 @@ public class MenuActivity extends AppCompatActivity
 
         FragmentManager fm = getFragmentManager();
 
-        if (id == R.id.nav_map) {
+        switch (id) {
+            case R.id.nav_map:
+                fm.beginTransaction().replace(R.id.content_menu, new GasAreaActivity()).commit();
+                break;
+            case R.id.nav_search:
+                fm.beginTransaction().replace(R.id.content_menu, new GasActivity()).commit();
+                break;
+            case R.id.nav_gas:
+                break;
+            case R.id.nav_profile:
+                break;
+            case R.id.nav_settings:
+                break;
+        }
+
+        /*if (id == R.id.nav_map) {
             // Handle the camera action
             fm.beginTransaction().replace(R.id.content_menu, new GasAreaActivity()).commit();
         } else if (id == R.id.nav_search) {
@@ -124,7 +139,7 @@ public class MenuActivity extends AppCompatActivity
 
         } else if (id == R.id.nav_settings) {
 
-        }/* else if (id == R.id.nav_share) {
+        } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
 

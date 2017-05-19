@@ -7,9 +7,13 @@
             android:icon="@drawable/ic_menu_map"
             android:title="Map" />
         <item
-            android:id="@+id/nav_search"
+            android:id="@+id/nav_level"
             android:icon="@drawable/ic_menu_search"
             android:title="Level" />
+        <item
+            android:id="@+id/nav_gas"
+            android:icon="@drawable/ic_gas_level_black_24dp"
+            android:title="GasLevel"/>
         <item
             android:id="@+id/nav_profile"
             android:icon="@drawable/ic_menu_profile"
@@ -20,17 +24,17 @@
             android:title="Settings" />
     </group>
 
-<!--    <item android:title="Communicate">
-        <menu>
-            <item
-                android:id="@+id/nav_share"
-                android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
-            <item
-                android:id="@+id/nav_send"
-                android:icon="@drawable/ic_menu_send"
-                android:title="Send" />
-        </menu>
-    </item>-->
+    <!--    <item android:title="Communicate">
+            <menu>
+                <item
+                    android:id="@+id/nav_share"
+                    android:icon="@drawable/ic_menu_share"
+                    android:title="Share" />
+                <item
+                    android:id="@+id/nav_send"
+                    android:icon="@drawable/ic_menu_send"
+                    android:title="Send" />
+            </menu>
+        </item>-->
 
 </menu>

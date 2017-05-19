@@ -26,4 +26,5 @@
     <string name="connectionString">jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;</string>
     <string name="userAdmin">maskAdmin@appmaskdb</string>
     <string name="userPassword">Sdgp12345678</string>
+    <string name="title_activity_level">LevelActivity</string>
 </resources>
