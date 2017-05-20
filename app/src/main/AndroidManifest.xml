@@ -49,11 +49,11 @@
             android:name="io.fabric.ApiKey"
             android:value="501cc78385ee872c53989a91cecec39b285a34c3" />
 
-        <activity android:name=".FirstActivity" />
+        <activity android:name=".MainActivity" />
         <activity android:name=".SignupActivity" />
         <activity android:name=".LoginActivity" />
         <activity
-            android:name=".db.LevelActivity"
+            android:name=".LevelActivity"
             android:label="@string/title_activity_level"
             android:theme="@style/AppTheme"></activity>
     </application>

@@ -103,7 +103,8 @@ public class GasActivity extends Fragment {
                 graph.removeAllSeries();
                 switch (tab.getPosition()) {
                     case 0:
-                        getDateFromCloud("SELECT * FROM monthly WHERE userName = '" + username + "'");
+                        //getDateFromCloud("SELECT * FROM monthly WHERE userName = '" + username + "'");
+                        graph.addSeries(nSeries);
                         break;
                     case 1:
                         graph.addSeries(mSeries);
@@ -173,8 +174,8 @@ public class GasActivity extends Fragment {
         graph = (GraphView) getActivity().findViewById(R.id.graph);
 
         graph.addSeries(nSeries);
-        graph.addSeries(mSeries);
-        graph.addSeries(cSeries);
+        //graph.addSeries(mSeries);
+        //graph.addSeries(cSeries);
 
         graph.getViewport().setXAxisBoundsManual(false);
         graph.getViewport().setScrollable(true); // enables horizontal scrolling
@@ -417,7 +418,7 @@ public class GasActivity extends Fragment {
                         }
                         time += 5;
 
-                        Thread.sleep(5000);
+                        Thread.sleep(10000);
                     } catch (IOException e) {
                         e.printStackTrace();
                         break;
