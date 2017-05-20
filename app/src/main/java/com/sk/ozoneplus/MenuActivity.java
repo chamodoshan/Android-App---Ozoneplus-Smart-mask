@@ -1,7 +1,6 @@
 package com.sk.ozoneplus;
 
 import android.app.FragmentManager;
-import android.database.Cursor;
 import android.os.Bundle;
 
 import android.support.design.widget.NavigationView;
@@ -12,11 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.sk.ozoneplus.db.MaskDB_Manger;
 
 public class MenuActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -119,10 +114,11 @@ public class MenuActivity extends AppCompatActivity
             case R.id.nav_map:
                 fm.beginTransaction().replace(R.id.content_menu, new GasAreaActivity()).commit();
                 break;
-            case R.id.nav_search:
+            case R.id.nav_level:
                 fm.beginTransaction().replace(R.id.content_menu, new GasActivity()).commit();
                 break;
             case R.id.nav_gas:
+                fm.beginTransaction().replace(R.id.content_menu, new LevelActivity()).commit();
                 break;
             case R.id.nav_profile:
                 break;
