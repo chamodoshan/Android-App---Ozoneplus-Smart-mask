@@ -3,8 +3,10 @@ package com.sk.ozoneplus;
 import android.app.Fragment;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -173,10 +175,12 @@ public class LevelActivity extends Fragment {
                 //cSeries.appendData(new DataPoint(graphHoriLabel, c), true, 40);
                 break;
         }
+        graphHoriLabel++;
     }
 
-    public void appendData(LineGraphSeries graphSeries, double horiLabel, double val) {
+    public void appendData(LineGraphSeries<DataPoint> graphSeries, double horiLabel, double val) {
         graphSeries.appendData(new DataPoint(horiLabel, val), true, 40);
+        System.out.println(graphSeries.toString());
     }
 
     private class CloudIntegrator extends AsyncTask<Integer, String, ResultSet> {
@@ -185,7 +189,7 @@ public class LevelActivity extends Fragment {
             super.onPreExecute();
             graphHoriLabel = 0;
 
-            nSeries = new LineGraphSeries<>();
+            /*nSeries = new LineGraphSeries<>();
             nSeries.setAnimated(true);
             nSeries.setThickness(5);
             nSeries.setColor(Color.GREEN);
@@ -198,48 +202,57 @@ public class LevelActivity extends Fragment {
             cSeries = new LineGraphSeries<>();
             cSeries.setAnimated(true);
             cSeries.setThickness(5);
-            cSeries.setColor(Color.YELLOW);
+            cSeries.setColor(Color.YELLOW);*/
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.CUPCAKE)
         @Override
         protected ResultSet doInBackground(Integer... params) {
             Connection con = null;
             Statement stmt = null;
             ResultSet rs = null;
 
+            String[] collection = {"SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'N'",
+                    "SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'M'",
+                    "SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'C'"};
+
+
             try {
-                Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                con = DriverManager.getConnection(connectionString, userAdmin, password);
 
-                String SQL = null;
+                for (int x = 0; x < collection.length; x++) {
 
-                switch (params[0]) {
-                    case DAY:
-                        SQL = "SELECT * FROM daily WHERE userName = 'sk'";
-                        break;
-                    case MONTH:
-                        SQL = "SELECT * FROM monthly WHERE userName = 'sk'";
-                        break;
-                    case YEAR:
-                        SQL = "SELECT * FROM yearly WHERE userName = 'sk'";
-                        break;
+                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
+                    con = DriverManager.getConnection(connectionString, userAdmin, password);
+
+                    String SQL = null;
+
+                    switch (params[0]) {
+                        case DAY:
+                            SQL = "SELECT * FROM daily WHERE userName = 'sk'";
+                            break;
+                        case MONTH:
+                            SQL = collection[x];
+                            break;
+                        case YEAR:
+                            SQL = "SELECT * FROM yearly WHERE userName = 'sk'";
+                            break;
+                    }
+
+                    System.out.println("[SQL PREPARED]");
+
+                    stmt = con.createStatement();
+                    rs = stmt.executeQuery(SQL);
+
+                    while (rs.next()) {
+                        //System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3));
+                        publishProgress(rs.getString("gasType"), rs.getString("level"), x + "");
+                    }
                 }
-
-                System.out.println("[SQL PREPARED]");
-
-                stmt = con.createStatement();
-                rs = stmt.executeQuery(SQL);
-
-                /*while (rs.next()) {
-                    System.out.println(rs.getString(1) + " " + rs.getString(2) + " " + rs.getString(3));
-                    //responseHandler.obtainMessage(SERVER_TIME, rs.getString(1)).sendToTarget();
-                }*/
 
                 return rs;
 
             } catch (SQLException e) {
                 e.printStackTrace();
-                //TODO add exception to responseHandler
                 //responseHandler.sendEmptyMessage(NO_INTERNET_CONNECTION);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -261,34 +274,36 @@ public class LevelActivity extends Fragment {
             return null;
         }
 
+        String x = "0";
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            if (values == null) throw new NullPointerException();
+            if (!values[2].equals(x)) {
+                x = values[2];
+                graphHoriLabel = 0;
+            }
+            int gasType;
+            switch (values[0]) {
+                case "N":
+                    gasType = N;
+                    break;
+                case "C":
+                    gasType = C;
+                    break;
+                case "M":
+                    gasType = M;
+                    break;
+                default:
+                    throw new IllegalArgumentException();
+            }
+            updateGraph(gasType, Double.parseDouble(values[1]));
+            System.out.println(values[0] + " " + values[1]);
+        }
+
         @Override
         protected void onPostExecute(ResultSet s) {
-            //if(s == null) throw new NullPointerException();
-            try {
-                if (s.isClosed()) throw new NullPointerException();
-                super.onPostExecute(s);
-                //updateGraph(s);
-
-                int gasType;
-                while (s.next()) {
-                    switch (s.getString("gasType")) {
-                        case "N":
-                            gasType = N;
-                            break;
-                        case "C":
-                            gasType = C;
-                            break;
-                        case "M":
-                            gasType = M;
-                            break;
-                        default:
-                            throw new IllegalArgumentException();
-                    }
-                    updateGraph(gasType, s.getDouble("level"));
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
             cloud = null;
         }
     }
