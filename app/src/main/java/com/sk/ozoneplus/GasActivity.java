@@ -1,5 +1,6 @@
 package com.sk.ozoneplus;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -12,13 +13,17 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -38,6 +43,7 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -56,6 +62,13 @@ public class GasActivity extends Fragment {
     private static final int UPDATE_CLOUD = 2;
     private static final int GET_SERVER_TIME = 5;
     private static final int NO_INTERNET_CONNECTION = 11;
+
+    private static final int NO2 = 0;
+    private static final int HUMIDITY = 1;
+    private static final int METHANE = 2;
+    private static final int CO = 3;
+    private static final int SMOKE = 4;
+    private static final int TEMPERATURE = 5;
 
     // SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
@@ -79,6 +92,8 @@ public class GasActivity extends Fragment {
     private Executor executor;
     private int xAnsis = 0;
 
+    private Spinner spinner;
+
     private static String username;
 
     @Nullable
@@ -96,7 +111,7 @@ public class GasActivity extends Fragment {
         executor = new Queue();
         maskDB = new MaskDB_Manger(getActivity().getApplicationContext(), username);
 
-        TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
+        /*TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -127,9 +142,44 @@ public class GasActivity extends Fragment {
             public void onTabReselected(TabLayout.Tab tab) {
 
             }
+        });*/
+
+        spinner = (Spinner) getActivity().findViewById(R.id.spinner);
+        // Create an ArrayAdapter using the string array and a default spinner layout
+        ArrayAdapter<CharSequence> adapter =
+                ArrayAdapter.createFromResource(getActivity().getApplicationContext(),
+                        R.array.gas_list, R.layout.spinner_item);
+        // Specify the layout to use when the list of choices appears
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        // Apply the adapter to the spinner
+        spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch (position) {
+                    case NO2:
+                        graph.addSeries(nSeries);
+                        break;
+                    case HUMIDITY:
+                        graph.addSeries(mSeries);
+                        break;
+                    case METHANE:
+                        graph.addSeries(cSeries);
+                        break;
+                    case CO:
+
+                        break;
+                }
+                spinner.setSelection(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                spinner.setSelection(NO2);
+            }
         });
 
-        Button btnConnect = (Button) getActivity().findViewById(R.id.connectBT);
+        FloatingActionButton btnConnect = (FloatingActionButton) getActivity().findViewById(R.id.connectBT);
 
         //TODO change this onClick to XML file
         btnConnect.setOnClickListener(new View.OnClickListener() {
@@ -248,16 +298,20 @@ public class GasActivity extends Fragment {
                         cDataset.add(Double.parseDouble(a[2]));
 
                         xAnsis++;
+
+                        Log.v(TAG, "Bluetooth data " + a[0] + " " + a[1] + " " + a[2]);
                         break;
 
                     case UPDATE_CLOUD:
                         executor.execute(updateCloud);
-                        System.out.println("[CLOUD HANDLER]");
+                        Log.i(TAG, "Cloud update request sent");
+                        //System.out.println("[CLOUD HANDLER]");
                         break;
 
                     case NO_INTERNET_CONNECTION:
                         Snackbar.make(getView(), "Internet isn't connected", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
+                        Log.e(TAG, "No internet connection");
                         break;
                 }
             }
@@ -305,7 +359,7 @@ public class GasActivity extends Fragment {
                         graphHoriLabel++;
                         Thread.sleep(TIME_DELAY);
                     } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("[ARRAY OUT OF BOUND]");
+                        //System.out.println("[ARRAY OUT OF BOUND]");
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
@@ -342,8 +396,11 @@ public class GasActivity extends Fragment {
                         }
                     }
                 } catch (Exception e) {
-                    System.out.println("[BLUE TOOTH ENABLE EXCEPTION] " + e.getMessage());
+                    //System.out.println("[BLUE TOOTH ENABLE EXCEPTION] " + e.getMessage());
+                    Log.e(TAG, "Exception", e);
                 }
+
+                Log.i(TAG, "Bluetooth request sent");
 
                 // Set up a pointer to the remote node using it's address.
                 BluetoothDevice device = btAdapter.getRemoteDevice(address);
@@ -354,7 +411,7 @@ public class GasActivity extends Fragment {
                 //  UUID for SPP.
                 try {
                     btSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
-                    System.out.append("Connection established\n");
+                    //System.out.append("Connection established\n");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -383,7 +440,7 @@ public class GasActivity extends Fragment {
                     e.printStackTrace();
                 }
 
-                System.out.println("[BLUE HAS BEEN INITIALIZED]");
+                //System.out.println("[BLUE HAS BEEN INITIALIZED]");
 
                 String message = "send data\n";
                 int time = 0;
