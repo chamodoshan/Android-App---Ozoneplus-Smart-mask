@@ -27,4 +27,13 @@
     <string name="userAdmin">maskAdmin@appmaskdb</string>
     <string name="userPassword">Sdgp12345678</string>
     <string name="title_activity_level">LevelActivity</string>
+
+    <string-array name="gas_list">
+        <item>NO2</item>
+        <item>Humidity</item>
+        <item>Methane</item>
+        <item>CO</item>
+        <item>Smoke</item>
+        <item>Temperature</item>
+    </string-array>
 </resources>

@@ -60,7 +60,8 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="5dp"
-                android:text="Methane" />
+                android:text="Methane"
+                android:textColor="@color/colorPrimaryDark" />
 
         </LinearLayout>
 
@@ -81,7 +82,8 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="5dp"
-                android:text="NO2" />
+                android:text="NO2"
+                android:textColor="@color/colorPrimaryDark" />
 
         </LinearLayout>
 
@@ -102,7 +104,8 @@
                 android:layout_height="20dp"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="5dp"
-                android:text="Humidity" />
+                android:text="Humidity"
+                android:textColor="@color/colorPrimaryDark" />
 
         </LinearLayout>
 

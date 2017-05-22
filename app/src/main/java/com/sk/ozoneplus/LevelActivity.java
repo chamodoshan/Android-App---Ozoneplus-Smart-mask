@@ -12,6 +12,7 @@ import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class LevelActivity extends Fragment {
     private AppCompatActivity app;
     private CloudIntegrator cloud;
     private String user;
+    private String TAG = "LevelActivity";
 
     private final static int DAY = 0;
     private final static int MONTH = 1;
@@ -180,7 +182,7 @@ public class LevelActivity extends Fragment {
 
     public void appendData(LineGraphSeries<DataPoint> graphSeries, double horiLabel, double val) {
         graphSeries.appendData(new DataPoint(horiLabel, val), true, 40);
-        System.out.println(graphSeries.toString());
+        //System.out.println(graphSeries.toString());
     }
 
     private class CloudIntegrator extends AsyncTask<Integer, String, ResultSet> {
@@ -238,7 +240,7 @@ public class LevelActivity extends Fragment {
                             break;
                     }
 
-                    System.out.println("[SQL PREPARED]");
+                    Log.i(TAG,"SQL sent");
 
                     stmt = con.createStatement();
                     rs = stmt.executeQuery(SQL);
@@ -299,7 +301,8 @@ public class LevelActivity extends Fragment {
                     throw new IllegalArgumentException();
             }
             updateGraph(gasType, Double.parseDouble(values[1]));
-            System.out.println(values[0] + " " + values[1]);
+            //System.out.println(values[0] + " " + values[1]);
+            Log.i(TAG, "Database data " + values[0] + " " + values[1]);
         }
 
         @Override
