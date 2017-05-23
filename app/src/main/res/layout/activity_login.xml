@@ -28,16 +28,16 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/logo"
         android:layout_marginBottom="10dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:backgroundTint="@color/colorPrimary"
         android:drawableLeft="@drawable/ic_username_24dp"
         android:drawablePadding="10dp"
         android:hint="@string/loginUsername"
         android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/colorPrimary"
         android:textColorHint="@color/colorPrimary"
-        android:textSize="20sp"
         tools:ignore="RtlHardcoded" />
 
     <EditText
@@ -46,8 +46,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/username"
         android:layout_marginBottom="40dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
         android:backgroundTint="@color/colorPrimary"
         android:drawableLeft="@drawable/ic_password_24dp"
         android:drawablePadding="10dp"
@@ -55,9 +55,9 @@
         android:hint="@string/loginPassword"
         android:inputType="textPassword"
         android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
         android:textColor="@color/colorPrimary"
         android:textColorHint="@color/colorPrimary"
-        android:textSize="20sp"
         tools:ignore="RtlHardcoded" />
 
     <Button
@@ -67,7 +67,10 @@
         android:layout_below="@+id/password"
         android:background="@color/colorPrimaryDark"
         android:onClick="login"
-        android:text="login" />
+        android:text="login"
+        android:textAllCaps="true"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:textColor="@android:color/white" />
 
     <TextView
         android:layout_width="match_parent"
