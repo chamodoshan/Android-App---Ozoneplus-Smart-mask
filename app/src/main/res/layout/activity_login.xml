@@ -61,7 +61,7 @@
         tools:ignore="RtlHardcoded" />
 
     <Button
-        android:id="@+id/login"
+        android:id="@+id/loginButton"
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@+id/password"
@@ -73,9 +73,10 @@
         android:textColor="@android:color/white" />
 
     <TextView
+        android:id="@+id/signupLink"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/login"
+        android:layout_below="@+id/loginButton"
         android:layout_marginTop="20dp"
         android:text="No account yet? Create one"
         android:textAlignment="center"
