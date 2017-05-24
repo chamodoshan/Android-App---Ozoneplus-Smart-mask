@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -22,73 +24,161 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import io.fabric.sdk.android.Fabric;
+
 public class LoginActivity extends AppCompatActivity {
     //TODO change dismiss progress dialog to separate method
-    private EditText txt_username, txt_password;
+    @BindView(R.id.username) EditText _usernameTxt;
+    @BindView(R.id.password) EditText _passwordTxt;
+    @BindView(R.id.loginButton) Button _logBtn;
+    @BindView(R.id.signupLink) TextView _signupLink;
+
     private UserLoginTask loginTask;
     private static final String TAG = "LoginActivity";
-    private final ProgressDialog progressDialog = new ProgressDialog(getApplicationContext());
+    private static final int REQUEST_SIGNUP = 0;
+    private AlertDialog.Builder builder;
+    private ProgressDialog progressDialog;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        ButterKnife.bind(this);
+        Fabric.with(this, new Crashlytics());
+        buildAlert();
 
-        txt_username = (EditText) findViewById(R.id.username);
-        txt_password = (EditText) findViewById(R.id.password);
+        _signupLink.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
+                startActivityForResult(intent, REQUEST_SIGNUP);
+            }
+        });
+
+        progressDialog = new ProgressDialog(LoginActivity.this);
+        progressDialog.setIndeterminate(true);
+        progressDialog.setMessage("Authenticating...");
     }
 
-    public void login(View view) {
-        String username = txt_username.getText().toString();
-        String password = txt_password.getText().toString();
+    @OnClick(R.id.loginButton)
+    public void loginUser() {
+        Log.d(TAG, "Login");
 
-        if (username.length() < 1 || password.length() < 1) {
-            showError("Username or Password is empty");
+        if (!validate()) {
+            onLoginFailed();
+            return;
+        }
+
+        _logBtn.setEnabled(false);
+
+        progressDialog.show();
+
+        String username = _usernameTxt.getText().toString();
+        String password = _passwordTxt.getText().toString();
+
+        loginTask = new UserLoginTask(username, password);
+        loginTask.execute();
+        // TODO: Implement your own authentication logic here.
+
+        /*new android.os.Handler().postDelayed(
+                new Runnable() {
+                    public void run() {
+                        // On complete call either onLoginSuccess or onLoginFailed
+                        onLoginSuccess();
+                        // onLoginFailed();
+                        progressDialog.dismiss();
+                    }
+                }, 3000);*/
+    }
+
+    private void buildAlert() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(LoginActivity.this);
         } else {
-            if (loginTask == null) {
-                Log.d(TAG, "Login");
-                showProgress();
-                loginTask = new UserLoginTask(username, password);
-                loginTask.execute();
+            builder = new AlertDialog.Builder(LoginActivity.this);
+        }
+    }
+
+    private void showErrorDialog(String title, String message) {
+        builder.setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // continue with delete
+                    }
+                })
+                /*.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                    }
+                })*/
+                .show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_SIGNUP) {
+            if (resultCode == RESULT_OK) {
+
+                // TODO: Implement successful signup logic here
+                // By default we just finish the Activity and log them in automatically
+                this.finish();
             }
         }
     }
 
-    private void showProgress() {
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Authenticating...");
-        progressDialog.show();
+    @Override
+    public void onBackPressed() {
+        // disable going back to the MainActivity
+        moveTaskToBack(true);
     }
 
-    public void showError(String message) {
+    public void onLoginSuccess(String username) {
+        _logBtn.setEnabled(true);
         progressDialog.dismiss();
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setMessage(message);
-
-        alertDialogBuilder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
+        Crashlytics.setUserName(username);
+        Intent intent = new Intent(this, MenuActivity.class);
+        intent.putExtra("username", username);
+        //TODO add finish() at last or before last
+        finish();
+        startActivity(intent);
     }
 
-    public void show(String message) {
-        Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG).show();
+    public void onLoginFailed() {
+        Toast.makeText(getBaseContext(), "Login failed", Toast.LENGTH_LONG).show();
+        _logBtn.setEnabled(true);
+        progressDialog.dismiss();
     }
 
-    public void next(String username) {
+    public boolean validate() {
+        boolean valid = true;
+
+        String username = _usernameTxt.getText().toString();
+        String password = _passwordTxt.getText().toString();
+
+        if (username.isEmpty() || username.length() < 1) {
+            showErrorDialog("Invalid email address", "Entered email isn't a valid email address");
+            valid = false;
+        }
+
+        if (password.isEmpty() || password.length() < 3 || password.length() > 10) {
+            showErrorDialog("Invalid password", "Enter between 4 and 10 alphanumeric characters");
+            valid = false;
+        }
+
+        return valid;
+    }
+
+    /*public void next(String username) {
         Crashlytics.setUserName(username);
         progressDialog.dismiss();
 
         Intent intent = new Intent(this, MenuActivity.class);
         intent.putExtra("username", username);
         startActivity(intent);
-    }
-
+    }*/
 
     private class UserLoginTask extends AsyncTask<String, Void, Boolean> {
 
@@ -157,9 +247,12 @@ public class LoginActivity extends AppCompatActivity {
             loginTask = null;
 
             if (result) {
-                next(username);
+                //next(username);
+                onLoginSuccess(username);
             } else {
-                showError("Invalid username or password \nTry again");
+                showErrorDialog("Username or Password doesn't match"
+                        , "Entered username and password doesn't match");
+                onLoginFailed();
             }
         }
     }
