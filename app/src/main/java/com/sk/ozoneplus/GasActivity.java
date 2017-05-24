@@ -1,6 +1,5 @@
 package com.sk.ozoneplus;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -15,18 +14,17 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.support.design.widget.TabLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.vision.text.Line;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
@@ -43,7 +41,6 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -87,8 +84,8 @@ public class GasActivity extends Fragment {
 
     private GraphView graph;
     private Runnable updateGraph, updateCloud, connectBT;
-    private LineGraphSeries<DataPoint> nSeries, mSeries, cSeries;
-    private ArrayList<Double> nDataset, mDataset, cDataset;
+    private LineGraphSeries<DataPoint> no2Series, humiditySeries, methaneSeries, coSeries, smokeSeries, tempSeries;
+    private ArrayList<Double> no2Dataset, humidityDataset, methanecDataset, coDataset, smokeDataset, tempDataset;
     private Executor executor;
     private int xAnsis = 0;
 
@@ -111,39 +108,6 @@ public class GasActivity extends Fragment {
         executor = new Queue();
         maskDB = new MaskDB_Manger(getActivity().getApplicationContext(), username);
 
-        /*TabLayout tabLayout = (TabLayout) getActivity().findViewById(R.id.tabs);
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                graph.removeAllSeries();
-                switch (tab.getPosition()) {
-                    case 0:
-                        //getDateFromCloud("SELECT * FROM monthly WHERE userName = '" + username + "'");
-                        graph.addSeries(nSeries);
-                        break;
-                    case 1:
-                        graph.addSeries(mSeries);
-                        break;
-                    case 2:
-                        graph.addSeries(cSeries);
-                        break;
-                    case 3:
-
-                        break;
-                }
-            }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
-        });*/
-
         spinner = (Spinner) getActivity().findViewById(R.id.spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter =
@@ -158,16 +122,22 @@ public class GasActivity extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 switch (position) {
                     case NO2:
-                        graph.addSeries(nSeries);
+                        graph.addSeries(no2Series);
                         break;
                     case HUMIDITY:
-                        graph.addSeries(mSeries);
+                        graph.addSeries(humiditySeries);
                         break;
                     case METHANE:
-                        graph.addSeries(cSeries);
+                        graph.addSeries(methaneSeries);
                         break;
                     case CO:
-
+                        graph.addSeries(coSeries);
+                        break;
+                    case SMOKE:
+                        graph.addSeries(smokeSeries);
+                        break;
+                    case TEMPERATURE:
+                        graph.addSeries(smokeSeries);
                         break;
                 }
                 spinner.setSelection(position);
@@ -199,34 +169,31 @@ public class GasActivity extends Fragment {
         initializeGraph();
     }
 
+    private LineGraphSeries<DataPoint> declareGraph(int Color) {
+        LineGraphSeries<DataPoint> lineGraphSeries = new LineGraphSeries<>();
+        lineGraphSeries.setAnimated(true);
+        lineGraphSeries.setColor(Color);
+        lineGraphSeries.setThickness(5);
+        return lineGraphSeries;
+    }
+
     public void initializeGraph() {
-        nDataset = new ArrayList<>();
-        mDataset = new ArrayList<>();
-        cDataset = new ArrayList<>();
+        no2Dataset = new ArrayList<>();
+        humidityDataset = new ArrayList<>();
+        methanecDataset = new ArrayList<>();
+        coDataset = new ArrayList<>();
+        smokeDataset = new ArrayList<>();
+        tempDataset = new ArrayList<>();
 
-        nSeries = new LineGraphSeries<>();
-        nSeries.setAnimated(true);
-        nSeries.setThickness(5);
-        nSeries.setColor(Color.GREEN);
-
-        mSeries = new LineGraphSeries<>();
-        mSeries.setAnimated(true);
-        mSeries.setThickness(5);
-        mSeries.setColor(Color.RED);
-
-        cSeries = new LineGraphSeries<>();
-        cSeries.setAnimated(true);
-        cSeries.setThickness(5);
-        cSeries.setColor(Color.YELLOW);
-
-        //TODO create SQL Lite database . If already exists update it else create new
+        no2Series = declareGraph(Color.GREEN);
+        humiditySeries = declareGraph(Color.RED);
+        methaneSeries = declareGraph(Color.YELLOW);
+        coSeries = declareGraph(Color.BLUE);
+        smokeSeries = declareGraph(Color.GRAY);
+        tempSeries = declareGraph(Color.MAGENTA);
 
         graph = (GraphView) getActivity().findViewById(R.id.graph);
-
-        graph.addSeries(nSeries);
-        //graph.addSeries(mSeries);
-        //graph.addSeries(cSeries);
-
+        graph.addSeries(no2Series);
         graph.getViewport().setXAxisBoundsManual(false);
         graph.getViewport().setScrollable(true); // enables horizontal scrolling
         graph.getViewport().setScrollableY(true); // enables vertical scrolling
@@ -273,14 +240,11 @@ public class GasActivity extends Fragment {
                 String strIncome = null;
                 switch (msg.what) {
                     case SERVER_TIME:
-                        Toast.makeText(getActivity().getApplicationContext(), msg.obj.toString(), Toast.LENGTH_SHORT).show();
+                        showToast(msg.obj.toString());
                         System.out.println("[RESULT] " + msg.obj.toString());
 
-                        Calendar c = Calendar.getInstance();
-                        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                        String formattedDate = df.format(c.getTime());
-
-                        formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance());
+                        String formattedDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                .format(Calendar.getInstance());
 
                         if (!(compareTime(msg.obj.toString(), formattedDate))) {
                             //TODO Display error "Check the phone time and restart"
@@ -293,13 +257,16 @@ public class GasActivity extends Fragment {
                         showToast(strIncome);
                         String[] a = strIncome.split("/");
 
-                        nDataset.add(Double.parseDouble(a[0]));
-                        mDataset.add(Double.parseDouble(a[1]));
-                        cDataset.add(Double.parseDouble(a[2]));
+                        no2Dataset.add(Double.parseDouble(a[0]));
+                        humidityDataset.add(Double.parseDouble(a[1]));
+                        methanecDataset.add(Double.parseDouble(a[2]));
+                        coDataset.add(Double.parseDouble(a[3]));
+                        smokeDataset.add(Double.parseDouble(a[4]));
+                        tempDataset.add(Double.parseDouble(a[5]));
 
                         xAnsis++;
 
-                        Log.v(TAG, "Bluetooth data " + a[0] + " " + a[1] + " " + a[2]);
+                        Log.v(TAG, "Bluetooth Data Received");
                         break;
 
                     case UPDATE_CLOUD:
@@ -342,20 +309,27 @@ public class GasActivity extends Fragment {
                 while (true) {
                     try {
 
-                        double n = getValue(nDataset);
-                        double m = getValue(mDataset);
-                        double c = getValue(cDataset);
+                        double no2 = getValue(no2Dataset);
+                        double hum = getValue(humidityDataset);
+                        double methane = getValue(methanecDataset);
+                        double co = getValue(coDataset);
+                        double smk = getValue(smokeDataset);
+                        double temp = getValue(tempDataset);
 
                         //TODO if data not found leave a space in graph
-                        nSeries.appendData(new DataPoint(graphHoriLabel, n), true, 40);
-                        mSeries.appendData(new DataPoint(graphHoriLabel, m), true, 40);
-                        cSeries.appendData(new DataPoint(graphHoriLabel, c), true, 40);
+                        no2Series.appendData(new DataPoint(graphHoriLabel, no2), true, 40);
+                        humiditySeries.appendData(new DataPoint(graphHoriLabel, hum), true, 40);
+                        methaneSeries.appendData(new DataPoint(graphHoriLabel, methane), true, 40);
+                        coSeries.appendData(new DataPoint(graphHoriLabel, co), true, 40);
+                        smokeSeries.appendData(new DataPoint(graphHoriLabel, smk), true, 40);
+                        tempSeries.appendData(new DataPoint(graphHoriLabel, temp), true, 40);
+
                         y++;
                         //TODO move this to finally part
 
-                        insertDaily(graphHoriLabel, n, 1);
-                        insertDaily(graphHoriLabel, m, 2);
-                        insertDaily(graphHoriLabel, c, 3);
+                        /*insertDaily(graphHoriLabel, no2, 1);
+                        insertDaily(graphHoriLabel, hum, 2);
+                        insertDaily(graphHoriLabel, methane, 3);*/
                         graphHoriLabel++;
                         Thread.sleep(TIME_DELAY);
                     } catch (ArrayIndexOutOfBoundsException e) {
@@ -475,7 +449,7 @@ public class GasActivity extends Fragment {
                         }
                         time += 5;
 
-                        Thread.sleep(10000);
+                        Thread.sleep(TIME_DELAY);
                     } catch (IOException e) {
                         e.printStackTrace();
                         break;
