@@ -10,15 +10,16 @@
         android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="260dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginTop="70dp"
-        android:layout_marginBottom="70dp"
         android:background="@drawable/ozone_bg_part"
         android:contentDescription="ozoneLogo" />
 
     <Button
         android:id="@+id/signup"
+        style="@style/CustomLargeButton"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_alignParentLeft="true"
@@ -29,12 +30,12 @@
 
     <Button
         android:id="@+id/login"
+        style="@style/CustomLargeButton"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/signup"
-        android:background="@color/colorPrimaryDark"
         android:text="Login" />
 
 </RelativeLayout>
