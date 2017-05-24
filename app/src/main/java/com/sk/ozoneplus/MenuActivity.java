@@ -1,8 +1,10 @@
 package com.sk.ozoneplus;
 
 import android.app.FragmentManager;
+import android.os.Build;
 import android.os.Bundle;
 
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -17,7 +19,6 @@ public class MenuActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private static String username;
-
     private TextView txt_username;
 
     @Override
@@ -26,33 +27,6 @@ public class MenuActivity extends AppCompatActivity
         setContentView(R.layout.activity_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        //username = getIntent().getStringExtra("username");
-
-        //Toast.makeText(getApplicationContext(),username,Toast.LENGTH_LONG).show();
-
-        //txt_username = (TextView) findViewById(R.id.username);
-
-        /*TextView message = (TextView) findViewById(R.id.message);
-
-        MaskDB_Manger maskDB = new MaskDB_Manger(this, username);
-        Cursor cursor = maskDB.getDaily();
-        cursor.moveToFirst();
-        String msg = null;
-        while (!cursor.isAfterLast()) {
-            msg += cursor.getString(cursor.getColumnIndex("hour")) + " ";
-            msg += cursor.getString(cursor.getColumnIndex("level")) + "\n";
-        }
-        message.setText(msg);*/
-
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
