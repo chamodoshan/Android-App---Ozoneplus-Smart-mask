@@ -120,6 +120,7 @@ public class GasActivity extends Fragment {
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                graph.removeAllSeries();
                 switch (position) {
                     case NO2:
                         graph.addSeries(no2Series);
@@ -150,8 +151,6 @@ public class GasActivity extends Fragment {
         });
 
         FloatingActionButton btnConnect = (FloatingActionButton) getActivity().findViewById(R.id.connectBT);
-
-        //TODO change this onClick to XML file
         btnConnect.setOnClickListener(new View.OnClickListener() {
             boolean clicked = false;
 
@@ -194,11 +193,12 @@ public class GasActivity extends Fragment {
 
         graph = (GraphView) getActivity().findViewById(R.id.graph);
         graph.addSeries(no2Series);
-        graph.getViewport().setXAxisBoundsManual(false);
+        graph.getViewport().setXAxisBoundsManual(true);
         graph.getViewport().setScrollable(true); // enables horizontal scrolling
         graph.getViewport().setScrollableY(true); // enables vertical scrolling
         graph.getViewport().setScalable(true); // enables horizontal zooming and scrolling
         graph.getViewport().setScalableY(true); // enables vertical zooming and scrolling
+        //graph.getViewport()
         graph.getGridLabelRenderer().setHorizontalAxisTitle("Time");
 
         /*StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
@@ -308,7 +308,6 @@ public class GasActivity extends Fragment {
             public void run() {
                 while (true) {
                     try {
-
                         double no2 = getValue(no2Dataset);
                         double hum = getValue(humidityDataset);
                         double methane = getValue(methanecDataset);
