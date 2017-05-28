@@ -25,7 +25,10 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.vision.text.Line;
+import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.Viewport;
+import com.jjoe64.graphview.helper.DateAsXAxisLabelFormatter;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
 import com.sk.ozoneplus.db.MaskDB_Manger;
@@ -51,6 +54,7 @@ public class GasActivity extends Fragment {
     //TODO for now when gas button get clicked it only shows particular gas type change that to all in one graph change line colour
     //TODO if toxic area found and confirmed send request to gmaps API and get location and add to DB
     private static final String TAG = "GasActivity";
+    private final Handler mHandler = new Handler();
 
     private static final int TIME_DELAY = 5000;
 
@@ -59,6 +63,7 @@ public class GasActivity extends Fragment {
     private static final int UPDATE_CLOUD = 2;
     private static final int GET_SERVER_TIME = 5;
     private static final int NO_INTERNET_CONNECTION = 11;
+    private static final int MAX_DATAPOINTS = 60;
 
     private static final int NO2 = 0;
     private static final int HUMIDITY = 1;
@@ -83,11 +88,12 @@ public class GasActivity extends Fragment {
     private BluetoothServerSocket mmServerSocket;
 
     private GraphView graph;
-    private Runnable updateGraph, updateCloud, connectBT;
+    private Runnable updateGraph, updateCloud, connectBT, getData;
     private LineGraphSeries<DataPoint> no2Series, humiditySeries, methaneSeries, coSeries, smokeSeries, tempSeries;
     private ArrayList<Double> no2Dataset, humidityDataset, methanecDataset, coDataset, smokeDataset, tempDataset;
     private Executor executor;
     private int xAnsis = 0;
+    private Calendar calender;
 
     private Spinner spinner;
 
@@ -107,6 +113,7 @@ public class GasActivity extends Fragment {
 
         executor = new Queue();
         maskDB = new MaskDB_Manger(getActivity().getApplicationContext(), username);
+        calender = Calendar.getInstance();
 
         spinner = (Spinner) getActivity().findViewById(R.id.spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
@@ -138,7 +145,7 @@ public class GasActivity extends Fragment {
                         graph.addSeries(smokeSeries);
                         break;
                     case TEMPERATURE:
-                        graph.addSeries(smokeSeries);
+                        graph.addSeries(tempSeries);
                         break;
                 }
                 spinner.setSelection(position);
@@ -193,13 +200,28 @@ public class GasActivity extends Fragment {
 
         graph = (GraphView) getActivity().findViewById(R.id.graph);
         graph.addSeries(no2Series);
-        graph.getViewport().setXAxisBoundsManual(true);
+        graph.getViewport().setXAxisBoundsManual(false);
         graph.getViewport().setScrollable(true); // enables horizontal scrolling
         graph.getViewport().setScrollableY(true); // enables vertical scrolling
         graph.getViewport().setScalable(true); // enables horizontal zooming and scrolling
         graph.getViewport().setScalableY(true); // enables vertical zooming and scrolling
         //graph.getViewport()
-        graph.getGridLabelRenderer().setHorizontalAxisTitle("Time");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("time");
+        graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+            @Override
+            public String formatLabel(double value, boolean isValueX) {
+                if (isValueX) {
+                    // show normal x values
+                    return super.formatLabel(calender.get(Calendar.SECOND) + value, isValueX);
+                } else {
+                    // show currency for y values
+                    return super.formatLabel(value, isValueX);
+                }
+            }
+        });
+
+        //graph.getGridLabelRenderer().setHumanRounding(false);
+        //graph.getGridLabelRenderer().setNumHorizontalLabels(2);
 
         /*StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graph);
         staticLabelsFormatter.setHorizontalLabels(label);
@@ -254,8 +276,10 @@ public class GasActivity extends Fragment {
                     case UPDATE_GRAPH:
                         byte[] readBuf = (byte[]) msg.obj;
                         strIncome = new String(readBuf, 0, msg.arg1);
-                        showToast(strIncome);
+                        //showToast(strIncome);
                         String[] a = strIncome.split("/");
+
+                        Log.d(TAG, "Bluetooth Data " + strIncome);
 
                         no2Dataset.add(Double.parseDouble(a[0]));
                         humidityDataset.add(Double.parseDouble(a[1]));
@@ -265,8 +289,6 @@ public class GasActivity extends Fragment {
                         tempDataset.add(Double.parseDouble(a[5]));
 
                         xAnsis++;
-
-                        Log.v(TAG, "Bluetooth Data Received");
                         break;
 
                     case UPDATE_CLOUD:
@@ -306,43 +328,42 @@ public class GasActivity extends Fragment {
         updateGraph = new Runnable() {
             @Override
             public void run() {
-                while (true) {
-                    try {
-                        double no2 = getValue(no2Dataset);
-                        double hum = getValue(humidityDataset);
-                        double methane = getValue(methanecDataset);
-                        double co = getValue(coDataset);
-                        double smk = getValue(smokeDataset);
-                        double temp = getValue(tempDataset);
+                try {
+                    //double graphHoriLabel = calender.get(Calendar.SECOND);
 
-                        //TODO if data not found leave a space in graph
-                        no2Series.appendData(new DataPoint(graphHoriLabel, no2), true, 40);
-                        humiditySeries.appendData(new DataPoint(graphHoriLabel, hum), true, 40);
-                        methaneSeries.appendData(new DataPoint(graphHoriLabel, methane), true, 40);
-                        coSeries.appendData(new DataPoint(graphHoriLabel, co), true, 40);
-                        smokeSeries.appendData(new DataPoint(graphHoriLabel, smk), true, 40);
-                        tempSeries.appendData(new DataPoint(graphHoriLabel, temp), true, 40);
+                    double no2 = getValue(no2Dataset);
+                    double hum = getValue(humidityDataset);
+                    double methane = getValue(methanecDataset);
+                    double co = getValue(coDataset);
+                    double smk = getValue(smokeDataset);
+                    double temp = getValue(tempDataset);
 
-                        y++;
-                        //TODO move this to finally part
+                    //TODO if data not found leave a space in graph
+                    no2Series.appendData(new DataPoint(graphHoriLabel, no2), true, MAX_DATAPOINTS);
+                    humiditySeries.appendData(new DataPoint(graphHoriLabel, hum), true, MAX_DATAPOINTS);
+                    methaneSeries.appendData(new DataPoint(graphHoriLabel, methane), true, MAX_DATAPOINTS);
+                    coSeries.appendData(new DataPoint(graphHoriLabel, co), true, MAX_DATAPOINTS);
+                    smokeSeries.appendData(new DataPoint(graphHoriLabel, smk), true, MAX_DATAPOINTS);
+                    tempSeries.appendData(new DataPoint(graphHoriLabel, temp), true, MAX_DATAPOINTS);
+
+                    graph.getViewport().setMaxX(graphHoriLabel);
+                    graph.getViewport().setMinX(0);
+
+                    y++;
+                    //TODO move this to finally part
 
                         /*insertDaily(graphHoriLabel, no2, 1);
                         insertDaily(graphHoriLabel, hum, 2);
                         insertDaily(graphHoriLabel, methane, 3);*/
-                        graphHoriLabel++;
-                        Thread.sleep(TIME_DELAY);
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        //System.out.println("[ARRAY OUT OF BOUND]");
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e1) {
-                            e1.printStackTrace();
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    //TODO add if condition (not necessary)
+                    graphHoriLabel += 10;
+                    //Thread.sleep(TIME_DELAY);
+                    mHandler.postDelayed(this, TIME_DELAY);
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    //System.out.println("[ARRAY OUT OF BOUND]");
+                    //Thread.sleep(1000);
+                    mHandler.postDelayed(this, 1000);
                 }
+                //TODO add if condition (not necessary)
             }
         };
     }
@@ -416,7 +437,6 @@ public class GasActivity extends Fragment {
                 //System.out.println("[BLUE HAS BEEN INITIALIZED]");
 
                 String message = "send data\n";
-                int time = 0;
 
                 byte[] msgBuffer = message.getBytes();
                 try {
@@ -425,8 +445,7 @@ public class GasActivity extends Fragment {
                     e.printStackTrace();
                 }
 
-                byte[] buffer = new byte[1024];
-                int numBytes; // bytes returned from read()
+                //int numBytes; // bytes returned from read()
 
                 try {
                     mmServerSocket = btAdapter.listenUsingRfcommWithServiceRecord(address, MY_UUID);
@@ -435,26 +454,32 @@ public class GasActivity extends Fragment {
                     e.printStackTrace();
                 }
 
-                while (true) {
-                    try {
-                        numBytes = inputStream.read(buffer);
-                        // Send the obtained bytes to the UI activity.
-                        responseHandler.obtainMessage(UPDATE_GRAPH, numBytes, -1, buffer).sendToTarget();
-                        //TODO add this to time task
-                        if (time == 60) {
-                            // Update time to inform responseHandler
-                            responseHandler.obtainMessage(UPDATE_CLOUD).sendToTarget();
-                            time = 0;
-                        }
-                        time += 5;
+                getData.run();
+            }
+        };
 
-                        Thread.sleep(TIME_DELAY);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        break;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+        getData = new Runnable() {
+            int time = 0;
+            byte[] buffer = new byte[1024];
+
+            @Override
+            public void run() {
+                try {
+                    int numBytes = inputStream.read(buffer);
+                    // Send the obtained bytes to the UI activity.
+                    responseHandler.obtainMessage(UPDATE_GRAPH, numBytes, -1, buffer).sendToTarget();
+                    //TODO add this to time task
+                    if (time == 60) {
+                        // Update time to inform responseHandler
+                        responseHandler.obtainMessage(UPDATE_CLOUD).sendToTarget();
+                        time = 0;
                     }
+                    time += 5;
+
+                    mHandler.postDelayed(this, TIME_DELAY);
+                    //Thread.sleep(TIME_DELAY);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         };
