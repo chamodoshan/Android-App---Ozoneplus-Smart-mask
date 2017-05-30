@@ -9,15 +9,20 @@ import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,6 +31,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -43,9 +49,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -73,7 +81,7 @@ public class GasActivity extends Fragment {
     private static final int SMOKE = 4;
     private static final int TEMPERATURE = 5;
 
-    private static final double TOXIC_LEVEL_NO2 = 9;
+    private static final double TOXIC_LEVEL_NO2 = 8;
     private static final double TOXIC_LEVEL_HUMIDITY = 9;
     private static final double TOXIC_LEVEL_METHANE = 9;
     private static final double TOXIC_LEVEL_CO = 9;
@@ -105,6 +113,7 @@ public class GasActivity extends Fragment {
     private int xAnsis = 0;
     private Calendar calender;
     private Spinner spinner;
+    private TextView status;
 
     private String username;
     private boolean isClicked = false;
@@ -169,6 +178,8 @@ public class GasActivity extends Fragment {
             }
         });
 
+        status = (TextView) getActivity().findViewById(R.id.status);
+
         btnConnect = (FloatingActionButton) getActivity().findViewById(R.id.connectBT);
         btnConnect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -191,6 +202,8 @@ public class GasActivity extends Fragment {
                             }
                         }
                     });
+
+                    status.setText(DateFormat.getDateTimeInstance().format(new Date()));
                 }
             }
         });
@@ -229,7 +242,7 @@ public class GasActivity extends Fragment {
         graph.getViewport().setScalable(true); // enables horizontal zooming and scrolling
         graph.getViewport().setScalableY(true); // enables vertical zooming and scrolling
         //graph.getViewport()
-        graph.getGridLabelRenderer().setHorizontalAxisTitle("time");
+        graph.getGridLabelRenderer().setHorizontalAxisTitle("seconds");
         /*graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             int s = calender.get(Calendar.SECOND);
 
@@ -337,7 +350,6 @@ public class GasActivity extends Fragment {
             }
         };
 
-        updateCloud();
         connectBT();
         updateGraph();
 
@@ -346,8 +358,9 @@ public class GasActivity extends Fragment {
 
     private void addToDataSet(ArrayList<Double> dataset, int gasType, String[] a) {
         try {
-            dataset.add(Double.parseDouble(a[gasType]));
-            addNotification();
+            double val = Double.parseDouble(a[gasType]);
+            dataset.add(val);
+            checkToxicLevel(val, gasType);
             Log.i(TAG, "Data adding to list " + gasType + " " + a[gasType]);
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
             dataset.add(0d);
@@ -355,10 +368,11 @@ public class GasActivity extends Fragment {
         }
     }
 
-    private void checkToxicLevel(String value, int position) {
-        addNotification();
-        switch (position) {
+    private void checkToxicLevel(Double val, int gas) {
+        //alert();
+        switch (gas) {
             case NO2:
+                if (val >= TOXIC_LEVEL_NO2) alert(gas);
                 break;
             case HUMIDITY:
                 break;
@@ -373,10 +387,10 @@ public class GasActivity extends Fragment {
         }
     }
 
-    private void addNotification() {
+    private void alert(int toxicGas) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(getActivity())
-                        .setSmallIcon(R.drawable.cast_ic_notification_0)
+                        .setSmallIcon(R.drawable.i_c_launcher_ozone_web)
                         .setContentTitle("Gas Alert")
                         .setContentText("ALERT BITCH");
 
@@ -389,6 +403,54 @@ public class GasActivity extends Fragment {
         NotificationManager manager = (NotificationManager) getActivity()
                 .getSystemService(Context.NOTIFICATION_SERVICE);
         manager.notify(0, builder.build());
+
+        Vibrator v = (Vibrator) getActivity().getApplicationContext()
+                .getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        v.vibrate(5000);
+
+
+        new SendToxicLocation(toxicGas, getLastBestLocation()).execute();
+    }
+
+    private Location getLastBestLocation() {
+        Log.i(TAG, "GPS Locating");
+        LocationManager locationManager = (LocationManager) getActivity()
+                .getSystemService(Context.LOCATION_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(getActivity(),
+                android.Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getActivity(), android.Manifest.permission.ACCESS_COARSE_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return null;
+        }
+        Location locationGPS = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        Location locationNet = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+
+        long GPSLocationTime = 0;
+        if (null != locationGPS) {
+            GPSLocationTime = locationGPS.getTime();
+        }
+
+        long NetLocationTime = 0;
+
+        if (null != locationNet) {
+            NetLocationTime = locationNet.getTime();
+        }
+
+        if (0 < GPSLocationTime - NetLocationTime) {
+            return locationGPS;
+        } else {
+            return locationNet;
+        }
     }
 
     public void showToast(String message) {
@@ -401,8 +463,8 @@ public class GasActivity extends Fragment {
 
     public void showSnackBar(String message) {
         try {
-            Snackbar.make(getView(), message, Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
+            Snackbar.make(getActivity().findViewById(R.id.activity_gas),
+                    message, Snackbar.LENGTH_LONG).setAction("Action", null).show();
         } catch (NullPointerException e) {
             //e.printStackTrace();
         }
@@ -566,6 +628,7 @@ public class GasActivity extends Fragment {
         getData = new Runnable() {
             public void run() {
                 try {
+                    Log.i(TAG, "Receiving Data");
                     //if (btSocket.isConnected()) throw new NullPointerException("BT Socket is Null");
                     byte[] rawBytes = new byte[1024];
                     int bytes = inputStream.read(rawBytes);
@@ -600,96 +663,6 @@ public class GasActivity extends Fragment {
                 }
             }
         };*/
-    }
-
-    private final static String connectionString =
-            "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
-    private final static String userAdmin = "maskAdmin@appmaskdb";
-    private final static String password = "Sdgp12345678";
-    // Declare the JDBC objects.
-    private Connection con = null;
-    private Statement stmt = null;
-    private ResultSet rs = null;
-
-    private void updateCloud() {
-        updateCloud = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Establish the connection.
-                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                    con = DriverManager.getConnection(connectionString, userAdmin, password);
-
-                    // Create and execute an SQL statement that returns some data.
-                    String SQL = "INSERT INTO daily (userName, gasType, hour, level) " +
-                            "VALUES ('sk','C',12,7)";
-                    stmt = con.createStatement();
-                    rs = stmt.executeQuery(SQL);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Exception", e);
-                } finally {
-                    if (rs != null) try {
-                        rs.close();
-                    } catch (Exception e) {
-                    }
-                    if (stmt != null) try {
-                        stmt.close();
-                    } catch (Exception e) {
-                    }
-                    if (con != null) try {
-                        con.close();
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        };
-    }
-
-    private void getDateFromCloud(final String query) {
-        Runnable getData = new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Establish the connection.
-                    Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                    con = DriverManager.getConnection(connectionString, userAdmin, password);
-
-                    // Create and execute an SQL statement that returns some data.
-                    stmt = con.createStatement();
-                    rs = stmt.executeQuery(query);
-
-                    LineGraphSeries<DataPoint> quaries = new LineGraphSeries<>();
-
-                    while (rs.next()) {
-                        String day = rs.getString("day");
-                        String level = rs.getString("level");
-                        //showToast(day);
-                        //showToast(level);
-                        quaries.appendData(new DataPoint(Double.parseDouble(day), Double.parseDouble(level)), true, 40);
-                    }
-
-                    graph.addSeries(quaries);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    Log.e(TAG, "Exception", e);
-                } finally {
-                    if (rs != null) try {
-                        rs.close();
-                    } catch (Exception e) {
-                    }
-                    if (stmt != null) try {
-                        stmt.close();
-                    } catch (Exception e) {
-                    }
-                    if (con != null) try {
-                        con.close();
-                    } catch (Exception e) {
-                    }
-                }
-            }
-        };
-        executor.execute(getData);
     }
 
     /**
@@ -823,10 +796,33 @@ public class GasActivity extends Fragment {
         }
     }
 
-    public class UpdateDB extends AsyncTask {
+    public class SendToxicLocation extends AsyncTask<String, String, String> {
+
+        private final static String connectionString =
+                "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
+        private final static String userAdmin = "maskAdmin@appmaskdb";
+        private final static String password = "Sdgp12345678";
+        // Declare the JDBC objects.
+        private Connection con = null;
+        private Statement stmt = null;
+        private ResultSet rs = null;
+
+        private int toxicGas;
+        private Location location;
+
+        public SendToxicLocation(int toxicGas, Location location) {
+            this.toxicGas = toxicGas;
+            this.location = location;
+        }
 
         @Override
-        protected Object doInBackground(Object[] params) {
+        protected void onPreExecute() {
+            Log.i(TAG, "Cloud is running " + location.toString());
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
             return null;
         }
     }
