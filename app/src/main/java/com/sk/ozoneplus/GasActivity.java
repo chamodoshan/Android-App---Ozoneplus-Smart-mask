@@ -372,7 +372,7 @@ public class GasActivity extends Fragment {
         //alert();
         switch (gas) {
             case NO2:
-                if (val >= TOXIC_LEVEL_NO2) alert(gas);
+                if (val >= TOXIC_LEVEL_NO2) alert(gas, val);
                 break;
             case HUMIDITY:
                 break;
@@ -387,14 +387,14 @@ public class GasActivity extends Fragment {
         }
     }
 
-    private void alert(int toxicGas) {
+    private void alert(int toxicGas, Double val) {
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(getActivity())
                         .setSmallIcon(R.drawable.i_c_launcher_ozone_web)
                         .setContentTitle("Gas Alert")
                         .setContentText("ALERT BITCH");
 
-        Intent notificationIntent = new Intent(getActivity(), LoginActivity.class);
+        Intent notificationIntent = new Intent(getActivity(), GasAreaActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(getActivity(), 0, notificationIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(contentIntent);
@@ -410,7 +410,7 @@ public class GasActivity extends Fragment {
         v.vibrate(5000);
 
 
-        new SendToxicLocation(toxicGas, getLastBestLocation()).execute();
+        new SendToxicLocation(toxicGas, val, getLastBestLocation()).execute();
     }
 
     private Location getLastBestLocation() {
@@ -796,7 +796,7 @@ public class GasActivity extends Fragment {
         }
     }
 
-    public class SendToxicLocation extends AsyncTask<String, String, String> {
+    private class SendToxicLocation extends AsyncTask<String, String, String> {
 
         private final static String connectionString =
                 "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
@@ -808,10 +808,12 @@ public class GasActivity extends Fragment {
         private ResultSet rs = null;
 
         private int toxicGas;
+        private double level;
         private Location location;
 
-        public SendToxicLocation(int toxicGas, Location location) {
+        public SendToxicLocation(int toxicGas, double level, Location location) {
             this.toxicGas = toxicGas;
+            this.level = level;
             this.location = location;
         }
 
@@ -823,6 +825,69 @@ public class GasActivity extends Fragment {
 
         @Override
         protected String doInBackground(String... params) {
+            try {
+                int areaId;
+
+                // Establish the connection.
+                Class.forName("net.sourceforge.jtds.jdbc.Driver");
+                con = DriverManager.getConnection(connectionString, userAdmin, password);
+
+                String SQL = "INSERT INTO affectedArea (dangerLevel) VALUES (" + level + ")";
+
+                stmt = con.createStatement();
+                int a = stmt.executeUpdate(SQL);
+
+                Log.i(TAG, "Inserted into affected area");
+
+                if (a > 0) {
+                    SQL = "SELECT areaId FROM affectedArea WHERE areaId = (SELECT MAX(areaId) FROM affectedArea)";
+                    stmt = con.createStatement();
+                    rs = stmt.executeQuery(SQL);
+
+                    areaId = -1;
+
+                    while (rs.next()) {
+                        areaId = rs.getInt("areaId");
+                    }
+
+                    Log.i(TAG, "AreaId received " + areaId);
+
+                    if (areaId != -1) {
+                        SQL = "INSERT INTO location (areaId, lat, lot) VALUES (" + areaId
+                                + "," + location.getLatitude() + "," + location.getLongitude() + ")";
+                        stmt = con.createStatement();
+                        int row = stmt.executeUpdate(SQL);
+
+                        Log.i(TAG, "Location added");
+
+                        SQL = "INSERT INTO areaGas (areaId, gasId, gasLevel) " +
+                                "VALUES (" + areaId + "," + toxicGas + "," + level + ")";
+                        stmt = con.createStatement();
+                        row = stmt.executeUpdate(SQL);
+
+                        Log.i(TAG, "Area gas added");
+                    }
+                }
+
+            } catch (SQLException e) {
+                Log.e(TAG, "SQL Exception", e);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception", e);
+            } finally {
+                if (rs != null) try {
+                    rs.close();
+                } catch (Exception e) {
+                }
+                if (stmt != null) try {
+                    stmt.close();
+                } catch (Exception e) {
+                }
+                if (con != null) try {
+                    con.close();
+                } catch (Exception e) {
+                }
+            }
+
             return null;
         }
     }
