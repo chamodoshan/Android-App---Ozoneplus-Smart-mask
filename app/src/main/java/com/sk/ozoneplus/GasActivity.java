@@ -1,10 +1,14 @@
 package com.sk.ozoneplus;
 
 import android.app.Fragment;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,11 +53,11 @@ import io.fabric.sdk.android.Fabric;
 
 public class GasActivity extends Fragment {
     //TODO set listeners for button if enables enabled button
-    //TODO for now when gas button get clicked it only shows particular gas type change that to all in one graph change line colour
+    //TODO for now when gas button get isClicked it only shows particular gas type change that to all in one graph change line colour
     //TODO if toxic area found and confirmed send request to gmaps API and get location and add to DB
     private static final String TAG = "GasActivity";
 
-    private static final int TIME_DELAY = 5000;
+    private static final int TIME_DELAY = 10000;
 
     private static final int SERVER_TIME = 0;
     private static final int UPDATE_GRAPH = 1;
@@ -78,8 +83,8 @@ public class GasActivity extends Fragment {
     // SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // server's MAC address
-    //private static final String address = "84:EF:18:B7:8D:AF";
-    private static final String address = "20:16:01:20:58:25";
+    private static final String address = "84:EF:18:B7:8D:AF";
+    //private static final String address = "20:16:01:20:58:25";
     //private static String address = "00:21:13:00:66:A8";
 
     private Handler responseHandler, commandHandler;
@@ -95,13 +100,14 @@ public class GasActivity extends Fragment {
     private GraphView graph;
     private Runnable updateGraph, updateCloud, connectBT, getData;
     private LineGraphSeries<DataPoint> no2Series, humiditySeries, methaneSeries, coSeries, smokeSeries, tempSeries;
-    private ArrayList<Double> no2Dataset, humidityDataset, methanecDataset, coDataset, smokeDataset, tempDataset;
+    private ArrayList<Double> no2Dataset, humidityDataset, methaneDataset, coDataset, smokeDataset, tempDataset;
     private Executor executor;
     private int xAnsis = 0;
     private Calendar calender;
     private Spinner spinner;
 
     private String username;
+    private boolean isClicked = false;
 
     private FloatingActionButton btnConnect;
 
@@ -165,15 +171,27 @@ public class GasActivity extends Fragment {
 
         btnConnect = (FloatingActionButton) getActivity().findViewById(R.id.connectBT);
         btnConnect.setOnClickListener(new View.OnClickListener() {
-            boolean clicked = false;
-
             @Override
             public void onClick(View v) {
-                btnConnect.setEnabled(true);
-                executor.execute(connectBT);
-                executor.execute(updateGraph);
-                //executor.execute(updateCloud);
-                clicked = true;
+                if (!isClicked) {
+                    isClicked = true;
+                    executor.execute(connectBT);
+                    executor.execute(updateGraph);
+                    //executor.execute(updateCloud);
+                    graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+                        int s = calender.get(Calendar.SECOND);
+
+                        @Override
+                        public String formatLabel(double value, boolean isValueX) {
+                            if (isValueX) {
+                                return super.formatLabel(labelFormer(s + value), isValueX);
+                            } else {
+                                // show currency for y values
+                                return super.formatLabel(value, isValueX);
+                            }
+                        }
+                    });
+                }
             }
         });
 
@@ -191,7 +209,7 @@ public class GasActivity extends Fragment {
     public void initializeGraph() {
         no2Dataset = new ArrayList<>();
         humidityDataset = new ArrayList<>();
-        methanecDataset = new ArrayList<>();
+        methaneDataset = new ArrayList<>();
         coDataset = new ArrayList<>();
         smokeDataset = new ArrayList<>();
         tempDataset = new ArrayList<>();
@@ -212,7 +230,7 @@ public class GasActivity extends Fragment {
         graph.getViewport().setScalableY(true); // enables vertical zooming and scrolling
         //graph.getViewport()
         graph.getGridLabelRenderer().setHorizontalAxisTitle("time");
-        graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
+        /*graph.getGridLabelRenderer().setLabelFormatter(new DefaultLabelFormatter() {
             int s = calender.get(Calendar.SECOND);
 
             @Override
@@ -224,7 +242,7 @@ public class GasActivity extends Fragment {
                     return super.formatLabel(value, isValueX);
                 }
             }
-        });
+        });*/
 
         //graph.getGridLabelRenderer().setHumanRounding(false);
         //graph.getGridLabelRenderer().setNumHorizontalLabels(2);
@@ -283,19 +301,24 @@ public class GasActivity extends Fragment {
                         break;
 
                     case UPDATE_GRAPH:
-                        byte[] readBuf = (byte[]) msg.obj;
-                        strIncome = new String(readBuf, 0, msg.arg1);
-                        //showToast(strIncome);
+                        strIncome = (String) msg.obj;
                         String[] a = strIncome.split("/");
 
                         Log.i(TAG, "Bluetooth Data " + strIncome);
 
-                        no2Dataset.add(Double.parseDouble(a[NO2]));
+                        /*no2Dataset.add(Double.parseDouble(a[NO2]));
                         humidityDataset.add(Double.parseDouble(a[HUMIDITY]));
-                        methanecDataset.add(Double.parseDouble(a[METHANE]));
+                        methaneDataset.add(Double.parseDouble(a[METHANE]));
                         coDataset.add(Double.parseDouble(a[CO]));
                         smokeDataset.add(Double.parseDouble(a[SMOKE]));
-                        tempDataset.add(Double.parseDouble(a[TEMPERATURE]));
+                        tempDataset.add(Double.parseDouble(a[TEMPERATURE]));*/
+
+                        addToDataSet(no2Dataset, NO2, a);
+                        addToDataSet(humidityDataset, HUMIDITY, a);
+                        addToDataSet(methaneDataset, METHANE, a);
+                        addToDataSet(coDataset, CO, a);
+                        addToDataSet(smokeDataset, SMOKE, a);
+                        addToDataSet(tempDataset, TEMPERATURE, a);
 
                         xAnsis++;
                         break;
@@ -307,7 +330,7 @@ public class GasActivity extends Fragment {
                         break;
 
                     case NO_INTERNET_CONNECTION:
-                        showToast("Internet isn't connected");
+                        //showToast("Internet isn't connected");
                         Log.i(TAG, "No internet connection");
                         break;
                 }
@@ -321,8 +344,51 @@ public class GasActivity extends Fragment {
         //commandHandler.sendEmptyMessage(GET_SERVER_TIME);
     }
 
-    private void checkToxicLevel(String[] a) {
+    private void addToDataSet(ArrayList<Double> dataset, int gasType, String[] a) {
+        try {
+            dataset.add(Double.parseDouble(a[gasType]));
+            addNotification();
+            Log.i(TAG, "Data adding to list " + gasType + " " + a[gasType]);
+        } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
+            dataset.add(0d);
+            Log.e(TAG, "Data didn't receive " + gasType, e);
+        }
+    }
 
+    private void checkToxicLevel(String value, int position) {
+        addNotification();
+        switch (position) {
+            case NO2:
+                break;
+            case HUMIDITY:
+                break;
+            case METHANE:
+                break;
+            case CO:
+                break;
+            case SMOKE:
+                break;
+            case TEMPERATURE:
+                break;
+        }
+    }
+
+    private void addNotification() {
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(getActivity())
+                        .setSmallIcon(R.drawable.cast_ic_notification_0)
+                        .setContentTitle("Gas Alert")
+                        .setContentText("ALERT BITCH");
+
+        Intent notificationIntent = new Intent(getActivity(), LoginActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(getActivity(), 0, notificationIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+
+        // Add as notification
+        NotificationManager manager = (NotificationManager) getActivity()
+                .getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, builder.build());
     }
 
     public void showToast(String message) {
@@ -354,12 +420,11 @@ public class GasActivity extends Fragment {
 
                     double no2 = getValue(no2Dataset);
                     double hum = getValue(humidityDataset);
-                    double methane = getValue(methanecDataset);
+                    double methane = getValue(methaneDataset);
                     double co = getValue(coDataset);
                     double smk = getValue(smokeDataset);
                     double temp = getValue(tempDataset);
 
-                    //TODO if data not found leave a space in graph
                     no2Series.appendData(new DataPoint(graphHoriLabel, no2), true, MAX_DATAPOINTS);
                     humiditySeries.appendData(new DataPoint(graphHoriLabel, hum), true, MAX_DATAPOINTS);
                     methaneSeries.appendData(new DataPoint(graphHoriLabel, methane), true, MAX_DATAPOINTS);
@@ -371,8 +436,6 @@ public class GasActivity extends Fragment {
                     graph.getViewport().setMinX(0);
 
                     y++;
-                    //TODO move this to finally part
-
                         /*insertDaily(graphHoriLabel, no2, 1);
                         insertDaily(graphHoriLabel, hum, 2);
                         insertDaily(graphHoriLabel, methane, 3);*/
@@ -435,7 +498,7 @@ public class GasActivity extends Fragment {
 
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    Log.e(TAG, "Bluetooth Listen Exception", e);
                     enableBtn();
                     showSnackBar("Bluetooth disconnected");
                     return;
@@ -449,8 +512,9 @@ public class GasActivity extends Fragment {
                     try {
                         btSocket.close();
                     } catch (IOException e2) {
-                        e2.printStackTrace();
+                        Log.e(TAG, "Bluetooth socket close exception", e2);
                     }
+                    Log.e(TAG, "Bluetooth connection exception", e);
                     enableBtn();
                     showSnackBar("Bluetooth disconnected");
                     return;
@@ -469,7 +533,7 @@ public class GasActivity extends Fragment {
 
                 //System.out.println("[BLUE HAS BEEN INITIALIZED]");
 
-                String message = "send data\n";
+                //String message = "send data\n";
 
                 /*byte[] msgBuffer = message.getBytes();
                 try {
@@ -494,58 +558,29 @@ public class GasActivity extends Fragment {
                     return;
                 }
 
-                //getData.run();
-                beginListenForData();
+                getData.run();
+                //beginListenForData();
             }
         };
 
-        /*getData = new Runnable() {
-            int time = 0;
-            byte[] buffer = new byte[1024];
-
-            @Override
+        getData = new Runnable() {
             public void run() {
                 try {
-                    Log.i(TAG, "Bluetooth Receiving");
-                    int numBytes = inputStream.read(buffer);
-                    // Send the obtained bytes to the UI activity.
-                    responseHandler.obtainMessage(UPDATE_GRAPH, numBytes, -1, buffer).sendToTarget();
-
-                    *//*String s = new String(buffer);
-                    Log.i(TAG, "Bluetooth data " + s);*//*
-
-                    //TODO add this to time task
-                    if (time == 60) {
-                        // Update time to inform responseHandler
-                        responseHandler.obtainMessage(UPDATE_CLOUD).sendToTarget();
-                        time = 0;
-                    }
-                    time += 5;
-
-                    Log.i(TAG, "Done");
-
+                    //if (btSocket.isConnected()) throw new NullPointerException("BT Socket is Null");
+                    byte[] rawBytes = new byte[1024];
+                    int bytes = inputStream.read(rawBytes);
+                    final String string = new String(rawBytes, 0, bytes);
+                    responseHandler.obtainMessage(UPDATE_GRAPH, string).sendToTarget();
                     btHandler.postDelayed(this, TIME_DELAY);
-                    //Thread.sleep(TIME_DELAY);
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } catch (Exception ex) {
+                    Log.i(TAG, "Bluetooth data receive exception", ex);
                     enableBtn();
                     showSnackBar("Bluetooth disconnected");
                 }
             }
-        };*/
-    }
+        };
 
-    Thread workerThread;
-    byte[] readBuffer;
-    int readBufferPosition;
-    volatile boolean stopWorker;
-
-    void beginListenForData() {
-        Log.i(TAG, "BT begins");
-        stopWorker = false;
-        readBufferPosition = 0;
-        readBuffer = new byte[1024];
-        getData = new Runnable() {
+        /*getData = new Runnable() {
             public void run() {
                 try {
                     int byteCount = inputStream.available();
@@ -553,22 +588,19 @@ public class GasActivity extends Fragment {
                         byte[] rawBytes = new byte[byteCount];
                         int bytes = inputStream.read(rawBytes);
                         final String string = new String(rawBytes, 0, bytes);
-
                         responseHandler.obtainMessage(UPDATE_GRAPH, string).sendToTarget();
+                        btHandler.postDelayed(this, TIME_DELAY);
                     } else {
                         Log.i(TAG, "No data");
                     }
-                    btHandler.postDelayed(this, TIME_DELAY);
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    Log.i(TAG, "Bluetooth data receive exception", ex);
                     enableBtn();
                     showSnackBar("Bluetooth disconnected");
                 }
             }
-        };
-        Log.i(TAG, "Sucks");
+        };*/
     }
-
 
     private final static String connectionString =
             "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
@@ -696,7 +728,7 @@ public class GasActivity extends Fragment {
     }
 
     public void enableBtn() {
-        btnConnect.setEnabled(true);
+        isClicked = false;
     }
 
     @Override
