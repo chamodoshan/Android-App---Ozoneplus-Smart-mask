@@ -5,9 +5,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/toolbar"
     android:minHeight="?attr/actionBarSize"
+    android:elevation="0dp"
+    android:titleTextColor="@android:color/white"
     android:background="?attr/colorPrimary"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    tools:targetApi="m">
 
     <!--<TextView-->
         <!--android:textSize="24sp"-->

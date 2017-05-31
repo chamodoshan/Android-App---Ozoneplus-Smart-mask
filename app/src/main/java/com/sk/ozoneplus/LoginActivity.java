@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -30,7 +29,6 @@ import butterknife.OnClick;
 import io.fabric.sdk.android.Fabric;
 
 public class LoginActivity extends AppCompatActivity {
-    //TODO change dismiss progress dialog to separate method
     @BindView(R.id.username) EditText _usernameTxt;
     @BindView(R.id.password) EditText _passwordTxt;
     @BindView(R.id.loginButton) Button _logBtn;
@@ -94,11 +92,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void buildAlert() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(LoginActivity.this);
-        } else {
-            builder = new AlertDialog.Builder(LoginActivity.this);
-        }
+        builder = new AlertDialog.Builder(LoginActivity.this);
     }
 
     private void showErrorDialog(String title, String message) {

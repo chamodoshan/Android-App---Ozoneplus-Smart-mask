@@ -155,8 +155,12 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
         public void onMyLocationChange(Location location) {
             //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
             //new LatLng(location.getLatitude(), location.getLongitude()), 17));
-            //Toast.makeText(getActivity().getApplicationContext(),
-            //location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_LONG).show();
+            try {
+                Toast.makeText(getActivity().getApplicationContext(),
+                        location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_LONG).show();
+            } catch (NullPointerException e) {
+
+            }
             //Log.i(TAG, location.getLatitude() + " " + location.getLongitude());
             updateCircle(location);
         }

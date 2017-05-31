@@ -65,7 +65,7 @@ public class GasActivity extends Fragment {
     //TODO if toxic area found and confirmed send request to gmaps API and get location and add to DB
     private static final String TAG = "GasActivity";
 
-    private static final int TIME_DELAY = 10000;
+    private static final int TIME_DELAY = 5000;
 
     private static final int SERVER_TIME = 0;
     private static final int UPDATE_GRAPH = 1;
@@ -85,14 +85,14 @@ public class GasActivity extends Fragment {
     private static final double TOXIC_LEVEL_HUMIDITY = 9;
     private static final double TOXIC_LEVEL_METHANE = 9;
     private static final double TOXIC_LEVEL_CO = 9;
-    private static final double TOXIC_LEVEL_SMOKE = 6;
+    private static final double TOXIC_LEVEL_SMOKE = 100;
     private static final double TOXIC_LEVEL_TEMPERATURE = 6;
 
     // SPP UUID
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     // server's MAC address
-    private static final String address = "84:EF:18:B7:8D:AF";
-    //private static final String address = "20:16:01:20:58:25";
+    //private static final String address = "84:EF:18:B7:8D:AF";
+    private static final String address = "20:16:01:20:58:25";
     //private static String address = "00:21:13:00:66:A8";
 
     private Handler responseHandler, commandHandler;
@@ -381,6 +381,7 @@ public class GasActivity extends Fragment {
             case CO:
                 break;
             case SMOKE:
+                if (val <= TOXIC_LEVEL_SMOKE) alert(gas, val);
                 break;
             case TEMPERATURE:
                 break;
@@ -625,7 +626,7 @@ public class GasActivity extends Fragment {
             }
         };
 
-        getData = new Runnable() {
+        /*getData = new Runnable() {
             public void run() {
                 try {
                     Log.i(TAG, "Receiving Data");
@@ -641,9 +642,9 @@ public class GasActivity extends Fragment {
                     showSnackBar("Bluetooth disconnected");
                 }
             }
-        };
+        };*/
 
-        /*getData = new Runnable() {
+        getData = new Runnable() {
             public void run() {
                 try {
                     int byteCount = inputStream.available();
@@ -655,6 +656,7 @@ public class GasActivity extends Fragment {
                         btHandler.postDelayed(this, TIME_DELAY);
                     } else {
                         Log.i(TAG, "No data");
+                        btHandler.postDelayed(this, 500);
                     }
                 } catch (Exception ex) {
                     Log.i(TAG, "Bluetooth data receive exception", ex);
@@ -662,7 +664,7 @@ public class GasActivity extends Fragment {
                     showSnackBar("Bluetooth disconnected");
                 }
             }
-        };*/
+        };
     }
 
     /**

@@ -14,8 +14,7 @@
         android:layout_alignParentTop="true"
         android:orientation="vertical"
         android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:paddingTop="10dp">
+        android:paddingRight="16dp">
 
         <!--        <ImageView android:src="@drawable/logo"
                     android:layout_width="wrap_content"
@@ -118,8 +117,8 @@
                 android:id="@+id/date_picker"
                 style="@style/CustomEditText"
                 android:layout_width="match_parent"
-                android:focusable="false"
                 android:layout_height="wrap_content"
+                android:focusable="false"
                 android:hint="Date of Birth "
                 android:inputType="date" />
 
@@ -131,7 +130,7 @@
             style="@style/CustomLargeButton"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="10dp"
             android:layout_marginTop="24dp"
             android:text="Create Account" />
 

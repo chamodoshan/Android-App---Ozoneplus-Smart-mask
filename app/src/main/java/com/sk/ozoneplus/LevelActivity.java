@@ -86,8 +86,10 @@ public class LevelActivity extends Fragment {
                 cloud = new CloudIntegrator();
                 switch (tab.getPosition()) {
                     case DAY:
+                        cloud = (CloudIntegrator) new CloudIntegrator().execute(DAY);
                         break;
                     case MONTH:
+                        cloud = (CloudIntegrator) new CloudIntegrator().execute(MONTH);
                         break;
                     case YEAR:
                         break;
@@ -214,14 +216,18 @@ public class LevelActivity extends Fragment {
             Statement stmt = null;
             ResultSet rs = null;
 
-            String[] collection = {"SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'N'",
+            String[] monthCollection = {"SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'N'",
                     "SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'M'",
                     "SELECT * FROM monthly WHERE userName = 'sk' AND gasType = 'C'"};
+
+            String[] dayCollection = {"SELECT * FROM daily WHERE userName = 'sk' AND gasType = 'N'",
+                    "SELECT * FROM daily WHERE userName = 'sk' AND gasType = 'M'",
+                    "SELECT * FROM daily WHERE userName = 'sk' AND gasType = 'C'"};
 
 
             try {
 
-                for (int x = 0; x < collection.length; x++) {
+                for (int x = 0; x < monthCollection.length; x++) {
 
                     Class.forName("net.sourceforge.jtds.jdbc.Driver");
                     con = DriverManager.getConnection(connectionString, userAdmin, password);
@@ -230,10 +236,10 @@ public class LevelActivity extends Fragment {
 
                     switch (params[0]) {
                         case DAY:
-                            SQL = "SELECT * FROM daily WHERE userName = 'sk'";
+                            SQL = dayCollection[x];
                             break;
                         case MONTH:
-                            SQL = collection[x];
+                            SQL = monthCollection[x];
                             break;
                         case YEAR:
                             SQL = "SELECT * FROM yearly WHERE userName = 'sk'";

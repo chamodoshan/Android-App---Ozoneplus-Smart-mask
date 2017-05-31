@@ -13,7 +13,7 @@
         <item
             android:id="@+id/nav_gas"
             android:icon="@drawable/ic_gas_level_black_24dp"
-            android:title="GasLevel"/>
+            android:title="GasLevel" />
         <item
             android:id="@+id/nav_profile"
             android:icon="@drawable/ic_menu_profile"
@@ -22,6 +22,11 @@
             android:id="@+id/nav_settings"
             android:icon="@drawable/ic_menu_settings"
             android:title="Settings" />
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_exit_to_app_black_24dp"
+            android:title="Logout" />
+
     </group>
 
     <!--    <item android:title="Communicate">

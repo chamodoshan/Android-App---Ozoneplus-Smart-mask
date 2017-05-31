@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -41,6 +42,10 @@ public class MenuActivity extends AppCompatActivity
         toggle.syncState();
 
         navigationView.setNavigationItemSelectedListener(this);
+
+        FragmentManager fm = getFragmentManager();
+        fm.beginTransaction().replace(R.id.content_menu, new GasActivity()).commit();
+        drawer.closeDrawer(GravityCompat.START);
     }
 
     @Override
@@ -102,24 +107,10 @@ public class MenuActivity extends AppCompatActivity
                 break;
             case R.id.nav_settings:
                 break;
+            case R.id.nav_logout:
+                break;
         }
 
-        /*if (id == R.id.nav_map) {
-            // Handle the camera action
-            fm.beginTransaction().replace(R.id.content_menu, new GasAreaActivity()).commit();
-        } else if (id == R.id.nav_search) {
-            fm.beginTransaction().replace(R.id.content_menu, new GasActivity()).commit();
-        } else if (id == R.id.nav_profile) {
-
-        } else if (id == R.id.nav_settings) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }*/
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
