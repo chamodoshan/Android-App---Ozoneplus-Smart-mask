@@ -7,9 +7,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
@@ -25,16 +27,20 @@ import com.google.android.gms.maps.model.LatLng;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 
 import io.fabric.sdk.android.Fabric;
 
-public class GasAreaActivity extends Fragment implements OnMapReadyCallback {
+public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
+        GoogleMap.OnCircleClickListener {
 
     private GoogleMap googleMap;
     private final String TAG = "GasAreaActivity";
     private Circle circleOptions;
     private MapView mMapView;
+    private TextView details;
 
     private boolean isPaused = false;
 
@@ -47,6 +53,7 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback {
 
         mMapView = (MapView) rootView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
+        details = (TextView) rootView.findViewById(R.id.gDeatils);
 
         mMapView.onResume(); // needed to get the map to display immediately
 
@@ -77,6 +84,8 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback {
                 circleOptions = googleMap.addCircle(new CircleOptions().center(IIT));
             }
         });
+
+        new GetAffectedLocations().execute();
 
         return rootView;
     }
@@ -144,62 +153,119 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback {
 
         @Override
         public void onMyLocationChange(Location location) {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(location.getLatitude(), location.getLongitude()), 17));
-            Toast.makeText(getActivity().getApplicationContext(),
-                    location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_LONG).show();
-            addCircle(location);
+            //googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+            //new LatLng(location.getLatitude(), location.getLongitude()), 17));
+            //Toast.makeText(getActivity().getApplicationContext(),
+            //location.getLatitude() + " " + location.getLongitude(), Toast.LENGTH_LONG).show();
+            //Log.i(TAG, location.getLatitude() + " " + location.getLongitude());
+            updateCircle(location);
         }
     };
 
-    public void addCircle(Location location) {
+    public void updateCircle(Location location) {
         circleOptions.setCenter(new LatLng(location.getLatitude(), location.getLongitude()));
         //Radius changing place
-        circleOptions.setRadius(100.0);
+        circleOptions.setRadius(50.0);
         circleOptions.setStrokeColor(0xFFFF0000);
         circleOptions.setFillColor(0x7FFF0000);
+
+        /*googleMap.addCircle(new CircleOptions().center(new LatLng(location.getLatitude()
+                , location.getLongitude())));*/
     }
 
-    private class ConnectCloud extends AsyncTask {
+    public void addCircle(LatLng location, CustomTag tag) {
+        Log.i(TAG, location.latitude + " " + location.longitude);
+        googleMap.addCircle(new CircleOptions().center(location)
+                .clickable(true)
+                .radius(5.0)
+                .fillColor(0x7F0000FF)
+                .strokeColor(0xFF0000FF).clickable(true)).setTag(tag);
+        Log.i(TAG, "Circle added");
+    }
 
-        private String message = "";
+    @Override
+    public void onCircleClick(Circle circle) {
+        Log.i(TAG, "Circle clicked");
+        onClick((CustomTag) circle.getTag());
+    }
+
+    private void onClick(CustomTag tag) {
+        tag.incrementClickCount();
+        details.setText(tag.toString());
+    }
+
+    private class GetAffectedLocations extends AsyncTask<Void, String, Void> {
+
+        private final static String connectionString =
+                "jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;";
+        private final static String userAdmin = "maskAdmin@appmaskdb";
+        private final static String password = "Sdgp12345678";
+        // Declare the JDBC objects.
+        private Connection con = null;
+        private Statement stmt = null;
+        private ResultSet rs = null;
 
         @Override
-        protected Object doInBackground(Object[] params) {
+        protected void onPreExecute() {
+            Log.i(TAG, "Cloud is running");
+            super.onPreExecute();
+        }
 
-            // Create a variable for the connection string.
-            /*String connectionUrl = "jdbc:sqlserver://appmaskdb.database.windows.net:1433;database=AppMaskDB;" +
-                    "user=maskAdmin@appmaskdb;password=Sdgp12345678;" +
-                    "encrypt=true;trustServerCertificate=false;" +
-                    "hostNameInCertificate=*.database.windows.net;" +
-                    "loginTimeout=30;\n";*/
-
-            // Declare the JDBC objects.
-            Connection con = null;
-            Statement stmt = null;
-            ResultSet rs = null;
-
+        @Override
+        protected Void doInBackground(Void... params) {
             try {
+
                 // Establish the connection.
                 Class.forName("net.sourceforge.jtds.jdbc.Driver");
-                con = DriverManager.getConnection("jdbc:jtds:sqlserver://appmaskdb.database.windows.net:1433;instance=SQLEXPRESS;DatabaseName=AppMaskDB;",
-                        "maskAdmin@appmaskdb", "Sdgp12345678");
+                con = DriverManager.getConnection(connectionString, userAdmin, password);
 
-                // Create and execute an SQL statement that returns some data.
-                String SQL = "SELECT * gas";
+                String SQL = "SELECT * FROM affectedArea";
+
                 stmt = con.createStatement();
                 rs = stmt.executeQuery(SQL);
 
-                // Iterate through the data in the result set and display it.
                 while (rs.next()) {
-                    System.out.println(rs.getString(1) + " " + rs.getString(2));
-                    message = rs.getString(1) + " " + rs.getString(2);
-                }
-            }
+                    int areaID = rs.getInt("areaId");
+                    int dangerLevel = rs.getInt("dangerLevel");
 
-            // Handle any errors that may have occurred.
-            catch (Exception e) {
-                e.printStackTrace();
+                    Log.i(TAG, "Affected area results received " + areaID + " " + dangerLevel);
+
+                    SQL = "SELECT * FROM areaGas WHERE areaId=" + areaID;
+                    stmt = con.createStatement();
+                    ResultSet areaGasRS = stmt.executeQuery(SQL);
+
+                    areaGasRS.next();
+                    int gasID = areaGasRS.getInt("gasId");
+                    int gasLevel = areaGasRS.getInt("gasLevel");
+
+                    Log.i(TAG, "Gas areas results received " + gasID + " " + gasLevel);
+
+                    SQL = "SELECT * FROM location WHERE areaId=" + areaID;
+                    stmt = con.createStatement();
+                    ResultSet locationRS = stmt.executeQuery(SQL);
+
+                    locationRS.next();
+                    String lat = locationRS.getString("lat");
+                    String lot = locationRS.getString("lot");
+
+                    Log.i(TAG, "Locations received " + lat + " " + lot);
+
+                    SQL = "SELECT name FROM gas WHERE id=" + gasID;
+                    stmt = con.createStatement();
+                    ResultSet GasRS = stmt.executeQuery(SQL);
+
+                    GasRS.next();
+                    String name = GasRS.getString("name");
+
+                    Log.i(TAG, "Gas name received " + name);
+
+                    publishProgress(lat + "", lot + "", name, gasLevel + "");
+                }
+
+            } catch (SQLException e) {
+                Log.e(TAG, "SQL Exception", e);
+            } catch (Exception e) {
+                Log.e(TAG, "Exception", e);
             } finally {
                 if (rs != null) try {
                     rs.close();
@@ -218,8 +284,31 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback {
             return null;
         }
 
-        public String getMessage() {
-            return message;
+        @Override
+        protected void onProgressUpdate(String... values) {
+            super.onProgressUpdate(values);
+            Log.i(TAG, "Value receiving in onProgress " + Arrays.toString(values));
+            addCircle(new LatLng(Double.parseDouble(values[0]), Double.parseDouble(values[1]))
+                    , new CustomTag(values[2]));
+        }
+    }
+
+    private static class CustomTag {
+        private final String description;
+        private int clickCount;
+
+        public CustomTag(String description) {
+            this.description = description;
+            clickCount = 0;
+        }
+
+        public void incrementClickCount() {
+            clickCount++;
+        }
+
+        @Override
+        public String toString() {
+            return description;
         }
     }
 }
