@@ -105,19 +105,6 @@ public class SignupActivity extends AppCompatActivity {
 
         cloud = new IntegrateCloud(fname, lname, username, email, password, dob);
         cloud.execute();
-
-        // TODO: Implement your own signup logic here.
-
-        /*new android.os.Handler().postDelayed(
-                new Runnable() {
-                    public void run() {
-                        // On complete call either onSignupSuccess or onSignupFailed
-                        // depending on success
-                        onSignupSuccess();
-                        // onSignupFailed();
-                        progressDialog.dismiss();
-                    }
-                }, 3000);*/
     }
 
     public void onSignupSuccess() {
@@ -237,7 +224,6 @@ public class SignupActivity extends AppCompatActivity {
                 } catch (Exception ignored) {
                 }
             }
-
             return false;
         }
 
@@ -251,5 +237,4 @@ public class SignupActivity extends AppCompatActivity {
             startActivity(new Intent(getApplicationContext(), LoginActivity.class));
         }
     }
-
 }

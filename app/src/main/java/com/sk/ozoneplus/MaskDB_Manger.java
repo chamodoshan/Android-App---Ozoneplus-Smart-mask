@@ -1,4 +1,4 @@
-package com.sk.ozoneplus.db;
+package com.sk.ozoneplus;
 
 import android.content.ContentValues;
 import android.content.Context;

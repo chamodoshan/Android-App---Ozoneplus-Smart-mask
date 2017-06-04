@@ -5,6 +5,7 @@
     android:id="@+id/activity_gas"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg"
     android:paddingBottom="@dimen/noPadding"
     android:paddingLeft="@dimen/noPadding"
     android:paddingRight="@dimen/noPadding"
@@ -13,11 +14,11 @@
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="300dp"
+        android:layout_width="290dp"
         android:layout_height="250dp"
         android:layout_marginBottom="30dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
+        android:layout_marginLeft="35dp"
+        android:layout_marginRight="35dp"
         android:layout_marginTop="20dp"
         android:background="@drawable/ozone_bg_part"
         android:contentDescription="" />
@@ -30,14 +31,14 @@
         android:layout_marginBottom="10dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTint="@color/colorPrimaryLight"
         android:drawableLeft="@drawable/ic_username_24dp"
         android:drawablePadding="10dp"
         android:hint="@string/loginUsername"
         android:maxLines="1"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textColor="@color/colorPrimary"
-        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryLight"
+        android:textColorHint="@color/colorPrimaryLight"
         tools:ignore="RtlHardcoded" />
 
     <EditText
@@ -48,7 +49,7 @@
         android:layout_marginBottom="40dp"
         android:layout_marginLeft="@dimen/activity_horizontal_margin"
         android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:backgroundTint="@color/colorPrimary"
+        android:backgroundTint="@color/colorPrimaryLight"
         android:drawableLeft="@drawable/ic_password_24dp"
         android:drawablePadding="10dp"
         android:fontFamily="sans-serif"
@@ -56,8 +57,8 @@
         android:inputType="textPassword"
         android:maxLines="1"
         android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-        android:textColor="@color/colorPrimary"
-        android:textColorHint="@color/colorPrimary"
+        android:textColor="@color/colorPrimaryLight"
+        android:textColorHint="@color/colorPrimaryLight"
         tools:ignore="RtlHardcoded" />
 
     <Button
@@ -80,6 +81,6 @@
         android:layout_marginTop="20dp"
         android:text="No account yet? Create one"
         android:textAlignment="center"
-        android:textColor="@color/colorPrimaryDark" />
+        android:textColor="@color/colorPrimaryLight" />
 
 </RelativeLayout>

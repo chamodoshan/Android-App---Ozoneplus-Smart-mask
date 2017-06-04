@@ -39,7 +39,6 @@ import com.jjoe64.graphview.DefaultLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.series.DataPoint;
 import com.jjoe64.graphview.series.LineGraphSeries;
-import com.sk.ozoneplus.db.MaskDB_Manger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -85,7 +84,7 @@ public class GasActivity extends Fragment {
     private static final double TOXIC_LEVEL_HUMIDITY = 9;
     private static final double TOXIC_LEVEL_METHANE = 9;
     private static final double TOXIC_LEVEL_CO = 9;
-    private static final double TOXIC_LEVEL_SMOKE = 100;
+    private static final double TOXIC_LEVEL_SMOKE = 120;
     private static final double TOXIC_LEVEL_TEMPERATURE = 6;
 
     // SPP UUID
@@ -363,7 +362,7 @@ public class GasActivity extends Fragment {
             checkToxicLevel(val, gasType);
             Log.i(TAG, "Data adding to list " + gasType + " " + a[gasType]);
         } catch (ArrayIndexOutOfBoundsException | NullPointerException e) {
-            dataset.add(0d);
+            dataset.add(dataset.get(dataset.size() - 1));
             Log.e(TAG, "Data didn't receive " + gasType, e);
         }
     }
@@ -393,7 +392,7 @@ public class GasActivity extends Fragment {
                 new NotificationCompat.Builder(getActivity())
                         .setSmallIcon(R.drawable.i_c_launcher_ozone_web)
                         .setContentTitle("Gas Alert")
-                        .setContentText("ALERT BITCH");
+                        .setContentText("Smoke level is high value: " + val);
 
         Intent notificationIntent = new Intent(getActivity(), GasAreaActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(getActivity(), 0, notificationIntent,

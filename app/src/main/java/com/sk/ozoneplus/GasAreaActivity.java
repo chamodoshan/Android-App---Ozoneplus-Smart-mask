@@ -40,7 +40,6 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
     private final String TAG = "GasAreaActivity";
     private Circle circleOptions;
     private MapView mMapView;
-    private TextView details;
 
     private boolean isPaused = false;
 
@@ -53,7 +52,6 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
 
         mMapView = (MapView) rootView.findViewById(R.id.map);
         mMapView.onCreate(savedInstanceState);
-        details = (TextView) rootView.findViewById(R.id.gDeatils);
 
         mMapView.onResume(); // needed to get the map to display immediately
 
@@ -195,7 +193,6 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
 
     private void onClick(CustomTag tag) {
         tag.incrementClickCount();
-        details.setText(tag.toString());
     }
 
     private class GetAffectedLocations extends AsyncTask<Void, String, Void> {

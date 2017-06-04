@@ -11,7 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- To auto-complete the email text field in the login form with the user's emails -->
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -20,14 +20,14 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher_logo"
+        android:icon="@mipmap/ic_launcher_ozone_logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".LoginActivity"
+            android:name=".SplashActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -52,11 +52,7 @@
 
         <activity android:name=".MenuActivity" />
         <activity android:name=".SignupActivity" />
-        <!--<activity android:name=".MenuActivity" />-->
-        <!--<activity
-            android:name=".LevelActivity"
-            android:label="@string/title_activity_level"
-            android:theme="@style/AppTheme" />-->
+        <activity android:name=".LoginActivity" />
     </application>
 
 </manifest>

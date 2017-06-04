@@ -24,7 +24,8 @@
 
     <style name="CustomEditText" parent="android:Widget.EditText">
         <item name="android:textColor">@color/colorPrimaryDark</item>
-        <item name="android:backgroundTint" tools:targetApi="lollipop">@color/colorPrimaryDark</item>
+        <item name="android:backgroundTint" tools:targetApi="lollipop">@color/colorPrimaryDark
+        </item>
         <item name="android:textColorHint">@color/colorPrimary</item>
         <item name="android:maxLines">1</item>
         <item name="android:fontFamily" tools:targetApi="jelly_bean">sans-serif</item>
@@ -45,4 +46,8 @@
         <item name="android:background">@color/colorPrimaryDark</item>
     </style>
 
+    <!-- Splash Screen theme. -->
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
 </resources>
