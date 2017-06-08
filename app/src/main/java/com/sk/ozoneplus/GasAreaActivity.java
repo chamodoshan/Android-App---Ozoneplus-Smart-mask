@@ -220,43 +220,36 @@ public class GasAreaActivity extends Fragment implements OnMapReadyCallback,
                 Class.forName("net.sourceforge.jtds.jdbc.Driver");
                 con = DriverManager.getConnection(connectionString, userAdmin, password);
 
-                String SQL = "SELECT * FROM affectedArea";
+                String SQL = "SELECT areaId FROM affectedArea";
 
                 stmt = con.createStatement();
                 rs = stmt.executeQuery(SQL);
 
                 while (rs.next()) {
                     int areaID = rs.getInt("areaId");
-                    int dangerLevel = rs.getInt("dangerLevel");
 
-                    Log.i(TAG, "Affected area results received " + areaID + " " + dangerLevel);
+                    Log.i(TAG, "Affected area results received " + areaID);
 
-                    SQL = "SELECT * FROM areaGas WHERE areaId=" + areaID;
+                    SQL = "SELECT areaGas.gasLevel, areaGas.gasId, location.lot, location.lat, gas.name" +
+                            "FROM ((areaGas " +
+                            "INNER JOIN location ON areaGas.areaId = location.areaId)" +
+                            "INNER JOIN gas ON areaGas.gasId = gas.id)" +
+                            "WHERE areaGas.areaId =" + areaID;
                     stmt = con.createStatement();
-                    ResultSet areaGasRS = stmt.executeQuery(SQL);
+                    ResultSet resultSet = stmt.executeQuery(SQL);
 
-                    areaGasRS.next();
-                    int gasID = areaGasRS.getInt("gasId");
-                    int gasLevel = areaGasRS.getInt("gasLevel");
+                    resultSet.next();
+                    int gasID = resultSet.getInt("gasId");
+                    int gasLevel = resultSet.getInt("gasLevel");
 
                     Log.i(TAG, "Gas areas results received " + gasID + " " + gasLevel);
 
-                    SQL = "SELECT * FROM location WHERE areaId=" + areaID;
-                    stmt = con.createStatement();
-                    ResultSet locationRS = stmt.executeQuery(SQL);
-
-                    locationRS.next();
-                    String lat = locationRS.getString("lat");
-                    String lot = locationRS.getString("lot");
+                    String lat = resultSet.getString("lat");
+                    String lot = resultSet.getString("lot");
 
                     Log.i(TAG, "Locations received " + lat + " " + lot);
 
-                    SQL = "SELECT name FROM gas WHERE id=" + gasID;
-                    stmt = con.createStatement();
-                    ResultSet GasRS = stmt.executeQuery(SQL);
-
-                    GasRS.next();
-                    String name = GasRS.getString("name");
+                    String name = resultSet.getString("name");
 
                     Log.i(TAG, "Gas name received " + name);
 
