@@ -1,5 +1,3 @@
 # OzonePlus-Android
 
-This Mobile Application receives the sensors every 5 seconds and displays the result in a graph.
-Displays polution area in google maps
-Displays consumed gas level by monthly and annualy
+It's a Android app which is connected via Bluetooth to get gas sensor's data for notify user and generate a polluted area map using Google map.
